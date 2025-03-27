@@ -1,9 +1,19 @@
-import React from 'react'
+import Sidebar from "../../components/Sidebar/Sidebar";
+import Header from "../../components/Header/Header";
+import Table from "../../components/Table/Table";
 
-function AdminDashboard() {
+const AdminDashboard = () => {
   return (
-    <div>AdminDashboard</div>
-  )
-}
+    <div className="flex h-screen">
+      <Sidebar />
+      <div className="flex-1 bg-gray-50">
+        <Header />
+        <div className="p-6">
+          <Table />
+        </div>
+      </div>
+    </div>
+  );
+};
 
-export default AdminDashboard
+export default AdminDashboard;
