@@ -16,7 +16,7 @@ const AdminDashboard = () => {
   const currentTitle = pageTitles[location.pathname] || "Admin Dashboard";
 
   return (
-    <div className="flex h-screen">
+    <div className="flex size-auto">
       {/* Sidebar is always visible */}
       <Sidebar />
 
