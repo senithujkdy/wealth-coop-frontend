@@ -1,15 +1,33 @@
 import Sidebar from "../../components/Sidebar/Sidebar";
+import { Outlet, useLocation } from "react-router-dom";
 import Header from "../../components/Header/Header";
-import Table from "../../components/Table/Table";
 
 const AdminDashboard = () => {
+  const location = useLocation();
+
+  // Map route paths to page titles
+  const pageTitles = {
+    "/dashboard": "Activity Overview",
+    "/statistics": "Statistics",
+    "/predictions": "Predictions",
+    "/services": "Services",
+  };
+
+  const currentTitle = pageTitles[location.pathname] || "Admin Dashboard";
+
   return (
     <div className="flex h-screen">
+      {/* Sidebar is always visible */}
       <Sidebar />
+
+      {/* Page content area */}
       <div className="flex-1 bg-gray-50">
-        <Header />
+        {/* Pass the title dynamically */}
+        <Header title={currentTitle} />
+
+        {/* Dynamic content from child pages */}
         <div className="p-6">
-          <Table />
+          <Outlet />
         </div>
       </div>
     </div>

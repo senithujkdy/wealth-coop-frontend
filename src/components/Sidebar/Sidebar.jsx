@@ -10,7 +10,7 @@ const Sidebar = () => {
         <ul className="space-y-4">
           <li className="flex items-center space-x-3 text-blue-600 font-semibold">
             <Home size={20} /> 
-            <Link to="/" className="">Dashboard</Link>
+            <Link to="/dashboard" className="">Dashboard</Link>
           </li>
           <li className="flex items-center space-x-3 text-gray-600">
             <BarChart size={20} />

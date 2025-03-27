@@ -1,9 +1,9 @@
 import { Bell, Settings } from "lucide-react";
 
-const Header = () => {
+const Header = ({ title }) => {
   return (
     <div className="flex justify-between items-center bg-white px-6 py-3 shadow-sm">
-      <h1 className="text-xl font-bold">Activity Overview</h1>
+      <h1 className="text-xl font-bold">{title}</h1>
       <div className="flex items-center space-x-4">
         <Settings size={24} className="text-gray-600 cursor-pointer" />
         <Bell size={24} className="text-gray-600 cursor-pointer" />
