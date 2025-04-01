@@ -1,6 +1,6 @@
-import Sidebar from "../../components/Sidebar/Sidebar";
+import Sidebar from "../../components/layout/Sidebar/Sidebar";
 import { Outlet, useLocation } from "react-router-dom";
-import Header from "../../components/Header/Header";
+import Header from "../../components/layout/Header/Header";
 
 const AdminDashboard = () => {
   const location = useLocation();
