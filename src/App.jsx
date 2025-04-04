@@ -16,7 +16,7 @@ function App() {
     <Router>
       <Routes>
         {/* Admin Dashboard Wrapper */}
-        <Route path="/" element={<AdminDashboard />}>
+        <Route path="/admin" element={<AdminDashboard />}>
           <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="statistics" element={<Statistics />} />
@@ -25,7 +25,7 @@ function App() {
         </Route>
 
          {/* Landing page */}
-         <Route path="/landing" element={<Landing />}>
+         <Route path="/" element={<Landing />}>
         
         </Route>
 
