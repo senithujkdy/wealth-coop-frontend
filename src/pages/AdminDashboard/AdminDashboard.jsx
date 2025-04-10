@@ -1,4 +1,4 @@
-import Sidebar from "../../components/layout/Sidebar/Sidebar";
+import Sidebar from "../../components/layout/AdminSidebar/AdminSidebar";
 import { Outlet, useLocation } from "react-router-dom";
 import Header from "../../components/layout/Header/Header";
 
@@ -7,10 +7,10 @@ const AdminDashboard = () => {
 
   // Map route paths to page titles
   const pageTitles = {
-    "/dashboard": "Activity Overview",
-    "/statistics": "Statistics",
-    "/predictions": "Predictions",
-    "/services": "Services",
+    "/admin/dashboard": "Activity Overview",
+    "/admin/statistics": "Statistics",
+    "/admin/predictions": "Predictions",
+    "/admin/services": "Services",
   };
 
   const currentTitle = pageTitles[location.pathname] || "Admin Dashboard";

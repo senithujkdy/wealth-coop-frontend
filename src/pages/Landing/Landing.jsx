@@ -1,7 +1,32 @@
 import { ArrowRight } from 'lucide-react';
 import Footer from '../../components/layout/Footer/Footer';
+import { useEffect, useState } from 'react';
 
 const Landing = () => {
+
+  const [ data, setData ] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(()=>{
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_baseURL}/test`);
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await res.json(); // Call the json() method
+        setData(data);
+        console.log(data);
+      } catch (error) {
+        console.error('Fetch error:', error);
+      } finally {
+       
+      }
+    };
+    fetchData();
+  },[])
+
   return (
     <div className="bg-gray-100 min-h-screen">
       <div className="max-w-6xl mx-auto p-6">
