@@ -11,7 +11,7 @@ import Login from './pages/auth/Login/Login';
 import UserDashboard from './pages/UserDashboard/UserDashboard';  // layout
 import Accounts from './pages/UserDashboard/Accounts';
 import Loan from './pages/UserDashboard/Loan';
-import Settings from './pages/UserDashboard/Settings';
+import Settings from './pages/Settings/Setttings';
 import UDashboard from './pages/UserDashboard/UDashboard'; 
 import Transaction from './pages/UserDashboard/Transaction'; 
 
@@ -30,7 +30,7 @@ function App() {
           <Route path="services" element={<Services />} />
         </Route>
 
-         {/* Landing page */}
+         {/* User Dashboard wrapper */}
          <Route path="/" element={<UserDashboard />}>
          <Route index element={<UDashboard />} />
           <Route path="overview" element={<UDashboard />} />
@@ -47,6 +47,10 @@ function App() {
 
         {/* Login */}
         <Route path='/login' element={<Login />}>
+        
+        </Route>
+
+        <Route path='/landing' element={<Landing />}>
         
         </Route>
 
