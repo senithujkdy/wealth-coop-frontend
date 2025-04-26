@@ -1,11 +1,52 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch('http://localhost:3000/api/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        login(data);
+        if (data.role === 'admin') navigate('/admin/dashboard');
+        else if (data.role === 'staff') navigate('/admin/dashboard');
+        else navigate('/');
+      } else {
+        alert(data.error || 'Login failed');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Something went wrong');
+    }
   };
 
   return (
@@ -27,14 +68,18 @@ const Login = () => {
             Lorem Ipsum is simply dummy text of the printing and typesetting industry.
           </p>
 
-          <form className="space-y-6">
-            {/* Username */}
+          <form onSubmit={handleLogin} className="space-y-6">
+            {/* Email */}
             <div>
-              <label htmlFor="username" className="block mb-2 text-gray-700">User name</label>
+              <label htmlFor="email" className="block mb-2 text-gray-700">User name</label>
               <input
-                type="text"
-                id="username"
+                type="email"
+                id="email"
+                name="email"
                 placeholder="Lorem lorem"
+                value={formData.email}
+                onChange={handleChange}
+                required
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -44,9 +89,13 @@ const Login = () => {
               <label htmlFor="password" className="block mb-2 text-gray-700">Enter your Password</label>
               <div className="relative">
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   id="password"
+                  name="password"
                   placeholder="Type your password here"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
                   className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 <button
