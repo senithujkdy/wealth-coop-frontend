@@ -5,9 +5,14 @@ const CustomerRoutes = () => {
   const { user } = useAuth();
 
   if (!user) return <Navigate to="/login" />;
-  if (user.role !== 'customer') return <Navigate to="/notfound" />;
-  
-  return <Outlet />;
+
+  // Allow only customers and admins
+  if (user.role === 'customer' || user.role === 'admin') {
+    return <Outlet />;
+  }
+
+  // Block staff users
+  return <Navigate to="/notfound" />;
 };
 
 export default CustomerRoutes;

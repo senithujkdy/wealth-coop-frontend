@@ -14,10 +14,10 @@ import Loan from './pages/UserDashboard/Loan';
 import Settings from './pages/Settings/Setttings';
 import UDashboard from './pages/UserDashboard/UDashboard'; 
 import Transaction from './pages/UserDashboard/Transaction'; 
+import NotFound from './pages/NotFound/NotFound';
 
-
-import PrivateRoutes from './routes/PrivateRoutes';
 import AdminRoutes from './routes/AdminRoutes';
+import CustomerRoutes from './routes/CutomerRoutes';
 
 function App() {
   return (
@@ -25,7 +25,7 @@ function App() {
       <Routes>
 
         {/* 👤 User (Customer/Staff) Area */}
-        <Route element={<PrivateRoutes />}>
+        <Route element={<CustomerRoutes />}>
           <Route path="/" element={<UserDashboard />}>
             <Route index element={<UDashboard />} />
             <Route path="overview" element={<UDashboard />} />
@@ -36,7 +36,7 @@ function App() {
           </Route>
         </Route>
 
-        {/* 🛡️ Admin Only */}
+        {/* 🛡️ Admin/Staff-only Routes */}
         <Route element={<AdminRoutes />}>
           <Route path="/admin" element={<AdminDashboard />}>
             <Route index element={<Dashboard />} />
@@ -51,6 +51,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/landing" element={<Landing />} />
+        <Route path="*" element={<NotFound />} />
         
       </Routes>
     </Router>

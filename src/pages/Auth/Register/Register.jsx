@@ -1,9 +1,23 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
+    role: 'customer' // default new registered users to customer (or let them pick role later if needed)
+  });
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -11,6 +25,51 @@ const Register = () => {
 
   const toggleConfirmPasswordVisibility = () => {
     setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:3000/api/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: formData.full_name,
+          email: formData.email,
+          phone: formData.phone,
+          username: formData.username,
+          password: formData.password,
+          role: formData.role
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        login(data);  // Save user to AuthContext
+        if (data.role === 'admin') navigate('/admin/dashboard');
+        else if (data.role === 'staff') navigate('/admin/dashboard');
+        else navigate('/'); // go to customer dashboard
+      } else {
+        alert(data.error || "Registration failed");
+      }
+    } catch (err) {
+      console.error('🚨 Registration Error:', err);
+      alert('Something went wrong.');
+    }
   };
 
   return (
@@ -32,15 +91,20 @@ const Register = () => {
             Lorem Ipsum is simply dummy text of the printing and typesetting industry.
           </p>
 
-          <form className="space-y-6">
+
+          <form onSubmit={handleRegister} className="space-y-6">
             {/* Full Name */}
             <div>
-              <label htmlFor="fullName" className="block mb-2 text-gray-700">Full Name</label>
+              <label htmlFor="full_name" className="block mb-2 text-gray-700">Full Name</label>
               <input
                 type="text"
-                id="fullName"
+                id="full_name"
+                name="full_name"
+                value={formData.full_name}
+                onChange={handleChange}
                 placeholder="Enter your full name"
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
               />
             </div>
 
@@ -50,8 +114,12 @@ const Register = () => {
               <input
                 type="email"
                 id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 placeholder="Enter your email address"
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
               />
             </div>
 
@@ -61,20 +129,43 @@ const Register = () => {
               <input
                 type="text"
                 id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
                 placeholder="Choose a username"
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            {/* Number */}
+            <div>
+              <label htmlFor="phone" className="block mb-2 text-gray-700">Phone Number</label>
+              <input
+                type="number"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="Enter Number"
+                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
               />
             </div>
 
             {/* Password */}
-            <div>
+              <div>
               <label htmlFor="password" className="block mb-2 text-gray-700">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
                   placeholder="Create a password"
                   className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
                 />
                 <button
                   type="button"
@@ -87,14 +178,18 @@ const Register = () => {
             </div>
 
             {/* Confirm Password */}
-            <div>
+              <div>
               <label htmlFor="confirmPassword" className="block mb-2 text-gray-700">Confirm Password</label>
               <div className="relative">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
                   placeholder="Confirm your password"
                   className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
                 />
                 <button
                   type="button"
