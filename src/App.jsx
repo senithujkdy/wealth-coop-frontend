@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route  } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import './App.css'
 import AdminDashboard from "./pages/AdminDashboard/AdminDashboard";
 import Statistics from "./pages/AdminDashboard/Statistics";
@@ -8,16 +8,18 @@ import Dashboard from './pages/AdminDashboard/Dashboard';
 import Landing from './pages/Landing/Landing';
 import Register from './pages/auth/Register/Register';
 import Login from './pages/auth/Login/Login';
-import UserDashboard from './pages/UserDashboard/UserDashboard';  // layout
+import UserDashboard from './pages/UserDashboard/UserDashboard';
 import Accounts from './pages/UserDashboard/Accounts';
 import Loan from './pages/UserDashboard/Loan';
 import Settings from './pages/Settings/Setttings';
-import UDashboard from './pages/UserDashboard/UDashboard'; 
-import Transaction from './pages/UserDashboard/Transaction'; 
+import UDashboard from './pages/UserDashboard/UDashboard';
+import Transaction from './pages/UserDashboard/Transaction';
+
+import LoanDefault from "./pages/Predictions/LoanDefault";
+import LoanAmountForecast from "./pages/Predictions/LoanForcast";
+import LoanRepaymentPrediction from "./pages/Predictions/LoanRepayment";
 
 function App() {
-  
-
   return (
     <Router>
       <Routes>
@@ -30,37 +32,33 @@ function App() {
           <Route path="services" element={<Services />} />
         </Route>
 
-         {/* User Dashboard wrapper */}
-         <Route path="/" element={<UserDashboard />}>
-         <Route index element={<UDashboard />} />
+        {/* User Dashboard wrapper */}
+        <Route path="/" element={<UserDashboard />}>
+          <Route index element={<UDashboard />} />
           <Route path="overview" element={<UDashboard />} />
           <Route path="accounts" element={<Accounts />} />
           <Route path="loans" element={<Loan />} />
-          <Route path="settings" element={<Settings />} /> 
-          <Route path="transaction" element={<Transaction />} /> 
+          <Route path="settings" element={<Settings />} />
+          <Route path="transaction" element={<Transaction />} />
         </Route>
 
         {/* Register */}
-        <Route path='/register' element={<Register />}>
-        
-        </Route>
+        <Route path='/register' element={<Register />} />
 
         {/* Login */}
-        <Route path='/login' element={<Login />}>
-        
-        </Route>
+        <Route path='/login' element={<Login />} />
 
-        <Route path='/landing' element={<Landing />}>
-        
-        </Route>
+        {/* Landing */}
+        <Route path='/landing' element={<Landing />} />
 
-
+        {/* Prediction Model Pages */}
+        <Route path="/default" element={<LoanDefault />} />
+        <Route path="/forecast" element={<LoanAmountForecast />} />
+        <Route path="/repayment" element={<LoanRepaymentPrediction />} />
 
       </Routes>
     </Router>
-    
   )
 }
 
 export default App
-
