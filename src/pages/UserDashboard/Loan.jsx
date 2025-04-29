@@ -14,6 +14,36 @@ import { useAccount } from "../../context/AccountContext";
 import ActiveLoanTable from "./ActiveLoansTable";
 
 const Loan = () => {
+  
+  const handleRepay = (loan) => {
+    const amount = prompt(`Enter repayment amount for Loan ID ${loan.loan_id}:`);
+  
+    if (!amount || isNaN(amount) || amount <= 0) {
+      alert("Please enter a valid number.");
+      return;
+    }
+  
+    fetch(`http://localhost:3000/api/repayments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id, // Add this line
+        loan_id: loan.loan_id,
+        account_id: loan.account_id,
+        amount_paid: parseFloat(amount),
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        alert(`Repayment successful: ${data.message}`);
+        // Optionally refresh activeLoans here
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Repayment failed.");
+      });
+  };
+  
   // Form state for loan application
   const [loanForm, setLoanForm] = useState({
     loan_amount: "",
@@ -31,6 +61,8 @@ const Loan = () => {
 
 
   const account_id = accounts && accounts[0]?.account_id;
+  const user_id = accounts && accounts[0]?.user_id;
+
 
   // State for active loans fetched from API
   const [activeLoans, setActiveLoans] = useState([]);
@@ -297,7 +329,7 @@ const Loan = () => {
         {/* Active Loans Table */}
         <ActiveLoanTable
           activeLoans={activeLoans}
-          
+          onRepay={handleRepay} 
         />
       </div>
     </div>
