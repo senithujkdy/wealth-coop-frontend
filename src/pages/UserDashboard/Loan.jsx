@@ -15,34 +15,16 @@ import ActiveLoanTable from "./ActiveLoansTable";
 
 const Loan = () => {
   
-  const handleRepay = (loan) => {
-    const amount = prompt(`Enter repayment amount for Loan ID ${loan.loan_id}:`);
-  
-    if (!amount || isNaN(amount) || amount <= 0) {
-      alert("Please enter a valid number.");
-      return;
-    }
-  
-    fetch(`http://localhost:3000/api/repayments`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id, // Add this line
-        loan_id: loan.loan_id,
-        account_id: loan.account_id,
-        amount_paid: parseFloat(amount),
-      })
-    })
-      .then(res => res.json())
-      .then(data => {
-        alert(`Repayment successful: ${data.message}`);
-        // Optionally refresh activeLoans here
-      })
-      .catch(err => {
-        console.error(err);
-        alert("Repayment failed.");
-      });
-  };
+const [showRepayModal, setShowRepayModal] = useState(false);
+const [repayLoan, setRepayLoan] = useState(null);
+const [repayAmount, setRepayAmount] = useState("");
+
+const handleRepay = (loan) => {
+  setRepayLoan(loan);
+  setRepayAmount("");
+  setShowRepayModal(true);
+};
+
   
   // Form state for loan application
   const [loanForm, setLoanForm] = useState({
@@ -119,19 +101,19 @@ const Loan = () => {
   const loanCategories = [
     {
       title: "Personal Loans",
-      amount: "$50,000",
+      amount: "Rs 50,000",
       icon: <User className="text-blue-500" size={24} />,
       bgColor: "bg-blue-100",
     },
     {
       title: "Corporate Loans",
-      amount: "$100,000",
+      amount: "Rs 100,000",
       icon: <Briefcase className="text-yellow-500" size={24} />,
       bgColor: "bg-yellow-100",
     },
     {
       title: "Business Loans",
-      amount: "$500,000",
+      amount: "Rs 500,000",
       icon: <BarChart2 className="text-pink-500" size={24} />,
       bgColor: "bg-pink-100",
     },
@@ -331,6 +313,64 @@ const Loan = () => {
           activeLoans={activeLoans}
           onRepay={handleRepay} 
         />
+        {showRepayModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md">
+      <h2 className="text-lg font-semibold mb-2">Repay Loan</h2>
+      <p className="text-gray-600 mb-4">
+        Enter amount to repay for <strong>Loan ID: {repayLoan?.loan_id}</strong>
+      </p>
+      <input
+        type="number"
+        className="w-full border p-2 rounded mb-4"
+        placeholder="Enter amount"
+        value={repayAmount}
+        onChange={(e) => setRepayAmount(e.target.value)}
+      />
+      <div className="flex justify-end space-x-2">
+        <button
+          onClick={() => setShowRepayModal(false)}
+          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={async () => {
+            if (!repayAmount || isNaN(repayAmount) || repayAmount <= 0) {
+              alert("Please enter a valid amount.");
+              return;
+            }
+            try {
+              const res = await fetch("http://localhost:3000/api/repayments", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  user_id,
+                  loan_id: repayLoan.loan_id,
+                  account_id: repayLoan.account_id,
+                  amount_paid: parseFloat(repayAmount),
+                }),
+              });
+              const data = await res.json();
+              if (res.ok) {
+                alert(`Repayment successful: ${data.message}`);
+                setShowRepayModal(false);
+              } else {
+                alert(data.error || "Repayment failed.");
+              }
+            } catch (err) {
+              console.error(err);
+              alert("An error occurred during repayment.");
+            }
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Confirm Repayment
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       </div>
     </div>
   );
