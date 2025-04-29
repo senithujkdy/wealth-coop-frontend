@@ -1,60 +1,180 @@
-// import React from 'react'
-
-// function Loan() {
-//   return (
-//     <div>Loan</div>
-//   )
-// }
-
-// export default Loan
-import React from 'react';
-import { User, Briefcase, BarChart2, Wrench } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  User,
+  Briefcase,
+  BarChart2,
+  Wrench,
+  DollarSign,
+  Calendar,
+  Percent,
+  CreditCard,
+} from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useAccount } from "../../context/AccountContext";
+import ActiveLoanTable from "./ActiveLoansTable";
 
 const Loan = () => {
+  // Form state for loan application
+  const [loanForm, setLoanForm] = useState({
+    loan_amount: "",
+    interest_rate: "",
+    credit_score: "",
+    income: "",
+    loan_limit: "",
+  });
+
+  // State for form submission
+  const { user } = useAuth();
+  const { accounts } = useAccount();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setLoanForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!user || accounts.length === 0) {
+      alert("User or account info missing.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("http://localhost:3000/api/loans/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user.user_id,
+          account_id: accounts[0].account_id,
+          loan_amount: Number(loanForm.loan_amount),
+          interest_rate: Number(loanForm.interest_rate),
+          credit_score: Number(loanForm.credit_score),
+          income: Number(loanForm.income),
+          loan_limit: loanForm.loan_limit,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setFormSubmitted(true);
+        console.log("✅ Loan submitted:", data);
+      } else {
+        alert(data.error || "Loan application failed");
+      }
+    } catch (err) {
+      console.error("🚨 Loan submission error:", err);
+      alert("An error occurred.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Loan category data
   const loanCategories = [
-    { 
-      title: 'Personal Loans', 
-      amount: '$50,000', 
+    {
+      title: "Personal Loans",
+      amount: "$50,000",
       icon: <User className="text-blue-500" size={24} />,
-      bgColor: 'bg-blue-100'
+      bgColor: "bg-blue-100",
     },
-    { 
-      title: 'Corporate Loans', 
-      amount: '$100,000', 
+    {
+      title: "Corporate Loans",
+      amount: "$100,000",
       icon: <Briefcase className="text-yellow-500" size={24} />,
-      bgColor: 'bg-yellow-100'
+      bgColor: "bg-yellow-100",
     },
-    { 
-      title: 'Business Loans', 
-      amount: '$500,000', 
+    {
+      title: "Business Loans",
+      amount: "$500,000",
       icon: <BarChart2 className="text-pink-500" size={24} />,
-      bgColor: 'bg-pink-100'
+      bgColor: "bg-pink-100",
     },
-    { 
-      title: 'Custom Loans', 
-      amount: 'Choose Money', 
+    {
+      title: "Custom Loans",
+      amount: "Choose Money",
       icon: <Wrench className="text-teal-500" size={24} />,
-      bgColor: 'bg-teal-100'
+      bgColor: "bg-teal-100",
     },
   ];
 
   // Active loans data
   const activeLoans = [
-    { id: '01', amount: '$100,000', leftToRepay: '$40,500', duration: '8 Months', interestRate: '12%', installment: '$2,000 / month' },
-    { id: '02', amount: '$500,000', leftToRepay: '$250,000', duration: '36 Months', interestRate: '10%', installment: '$8,000 / month' },
-    { id: '03', amount: '$900,000', leftToRepay: '$40,500', duration: '12 Months', interestRate: '12%', installment: '$5,000 / month' },
-    { id: '04', amount: '$50,000', leftToRepay: '$40,500', duration: '25 Months', interestRate: '5%', installment: '$2,000 / month' },
-    { id: '05', amount: '$50,000', leftToRepay: '$40,500', duration: '5 Months', interestRate: '16%', installment: '$10,000 / month' },
-    { id: '06', amount: '$80,000', leftToRepay: '$25,500', duration: '14 Months', interestRate: '8%', installment: '$2,000 / month' },
-    { id: '07', amount: '$12,000', leftToRepay: '$5,500', duration: '9 Months', interestRate: '13%', installment: '$500 / month' },
-    { id: '08', amount: '$160,000', leftToRepay: '$100,800', duration: '3 Months', interestRate: '12%', installment: '$900 / month' },
+    {
+      id: "01",
+      amount: "$100,000",
+      leftToRepay: "$40,500",
+      duration: "8 Months",
+      interestRate: "12%",
+      installment: "$2,000 / month",
+    },
+    {
+      id: "02",
+      amount: "$500,000",
+      leftToRepay: "$250,000",
+      duration: "36 Months",
+      interestRate: "10%",
+      installment: "$8,000 / month",
+    },
+    {
+      id: "03",
+      amount: "$900,000",
+      leftToRepay: "$40,500",
+      duration: "12 Months",
+      interestRate: "12%",
+      installment: "$5,000 / month",
+    },
+    {
+      id: "04",
+      amount: "$50,000",
+      leftToRepay: "$40,500",
+      duration: "25 Months",
+      interestRate: "5%",
+      installment: "$2,000 / month",
+    },
+    {
+      id: "05",
+      amount: "$50,000",
+      leftToRepay: "$40,500",
+      duration: "5 Months",
+      interestRate: "16%",
+      installment: "$10,000 / month",
+    },
+    {
+      id: "06",
+      amount: "$80,000",
+      leftToRepay: "$25,500",
+      duration: "14 Months",
+      interestRate: "8%",
+      installment: "$2,000 / month",
+    },
+    {
+      id: "07",
+      amount: "$12,000",
+      leftToRepay: "$5,500",
+      duration: "9 Months",
+      interestRate: "13%",
+      installment: "$500 / month",
+    },
+    {
+      id: "08",
+      amount: "$160,000",
+      leftToRepay: "$100,800",
+      duration: "3 Months",
+      interestRate: "12%",
+      installment: "$900 / month",
+    },
   ];
 
   // Calculate totals
-  const totalAmount = '$1,250,000';
-  const totalLeftToRepay = '$750,000';
-  const totalInstallment = '$50,000 / month';
+  const totalAmount = "$1,250,000";
+  const totalLeftToRepay = "$750,000";
+  const totalInstallment = "$50,000 / month";
 
   return (
     <div className="bg-gray-50 min-h-screen p-6">
@@ -64,7 +184,9 @@ const Loan = () => {
           {loanCategories.map((category, index) => (
             <div key={index} className="bg-white rounded-xl p-5 shadow-sm">
               <div className="flex items-center mb-2">
-                <div className={`w-12 h-12 flex items-center justify-center ${category.bgColor} rounded-full mr-3`}>
+                <div
+                  className={`w-12 h-12 flex items-center justify-center ${category.bgColor} rounded-full mr-3`}
+                >
                   {category.icon}
                 </div>
                 <span className="text-gray-500">{category.title}</span>
@@ -74,56 +196,140 @@ const Loan = () => {
           ))}
         </div>
 
-        {/* Active Loans Table */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <h2 className="text-xl font-bold text-gray-800 p-6 pb-4">Active Loans Overview</h2>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-left text-gray-500 border-b border-gray-100">
-                  <th className="px-6 py-3 font-medium">SL No</th>
-                  <th className="px-6 py-3 font-medium">Loan Money</th>
-                  <th className="px-6 py-3 font-medium">Left to repay</th>
-                  <th className="px-6 py-3 font-medium">Duration</th>
-                  <th className="px-6 py-3 font-medium">Interest rate</th>
-                  <th className="px-6 py-3 font-medium">Installment</th>
-                  <th className="px-6 py-3 font-medium">Repay</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activeLoans.map((loan, index) => (
-                  <tr key={index} className="border-b border-gray-100">
-                    <td className="px-6 py-4">{loan.id}.</td>
-                    <td className="px-6 py-4 font-medium">{loan.amount}</td>
-                    <td className="px-6 py-4">{loan.leftToRepay}</td>
-                    <td className="px-6 py-4">{loan.duration}</td>
-                    <td className="px-6 py-4">{loan.interestRate}</td>
-                    <td className="px-6 py-4">{loan.installment}</td>
-                    <td className="px-6 py-4">
-                      <button
-                        className={`rounded-full px-6 py-1 border border-blue-500 ${
-                          index === 0 ? 'bg-blue-500 text-white' : 'text-blue-500 bg-white'
-                        }`}
-                      >
-                        Repay
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                <tr className="bg-gray-50">
-                  <td className="px-6 py-4 text-red-500 font-medium">Total</td>
-                  <td className="px-6 py-4 text-red-500 font-medium">{totalAmount}</td>
-                  <td className="px-6 py-4 text-red-500 font-medium">{totalLeftToRepay}</td>
-                  <td className="px-6 py-4"></td>
-                  <td className="px-6 py-4"></td>
-                  <td className="px-6 py-4 text-red-500 font-medium">{totalInstallment}</td>
-                  <td className="px-6 py-4"></td>
-                </tr>
-              </tbody>
-            </table>
+        {/* Loan Application Form */}
+        <div className="bg-white rounded-xl shadow-sm mb-8 overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-xl font-bold text-gray-800">
+              Apply for a Loan
+            </h2>
+            <p className="text-gray-500 mt-1">
+              Fill out the form below to apply for a new loan
+            </p>
           </div>
+
+          {formSubmitted ? (
+            <div className="p-6">
+              <div className="bg-green-50 text-green-800 rounded-lg p-4 mb-4">
+                <div className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M5 13l4 4L19 7"
+                    ></path>
+                  </svg>
+                  <span className="font-medium">
+                    Loan application submitted successfully!
+                  </span>
+                </div>
+                <p className="mt-2">
+                  Our team will review your application and contact you soon.
+                </p>
+              </div>
+              <button
+                onClick={() => setFormSubmitted(false)}
+                className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Apply for Another Loan
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4 mx-6">
+              <div>
+                <label className="block text-gray-700">Loan Amount</label>
+                <input
+                  type="number"
+                  name="loan_amount"
+                  value={loanForm.loan_amount}
+                  onChange={handleChange}
+                  className="w-full mt-1 p-2 border rounded"
+                  placeholder="Ex: 500000"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700">Interest Rate (%)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  name="interest_rate"
+                  value={loanForm.interest_rate}
+                  onChange={handleChange}
+                  className="w-full mt-1 p-2 border rounded"
+                  placeholder="Ex: 12.5"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700">Credit Score</label>
+                <input
+                  type="number"
+                  name="credit_score"
+                  value={loanForm.credit_score}
+                  onChange={handleChange}
+                  className="w-full mt-1 p-2 border rounded"
+                  placeholder="Ex: 720"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700">Monthly Income</label>
+                <input
+                  type="number"
+                  name="income"
+                  value={loanForm.income}
+                  onChange={handleChange}
+                  className="w-full mt-1 p-2 border rounded"
+                  placeholder="Ex: 100000"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700">
+                  Loan Limit (e.g., CF)
+                </label>
+                <input
+                  type="text"
+                  name="loan_limit"
+                  value={loanForm.loan_limit}
+                  onChange={handleChange}
+                  className="w-full mt-1 p-2 border rounded"
+                  placeholder="Ex: CF"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className={`w-full p-3 mb-4 rounded text-white font-medium ${
+                  isSubmitting ? "bg-blue-300" : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              >
+                {isSubmitting ? "Submitting..." : "Submit Application"}
+              </button>
+            </form>
+          )}
         </div>
+
+        {/* Active Loans Table */}
+        <ActiveLoanTable
+          activeLoans={activeLoans}
+          totalAmount={totalAmount}
+          totalLeftToRepay={totalLeftToRepay}
+          totalInstallment={totalInstallment}
+        />
       </div>
     </div>
   );

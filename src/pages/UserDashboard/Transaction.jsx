@@ -17,7 +17,7 @@ const Transaction = () => {
   const cards = [
     {
       id: 1,
-      balance: '$5,756',
+      balance: 'Rs 5,756',
       cardHolder: 'Peter Hans',
       validThru: '12/22',
       cardNumber: '3778 **** **** 1234',
@@ -25,7 +25,7 @@ const Transaction = () => {
     },
     {
       id: 2,
-      balance: '$5,756',
+      balance: 'Rs 5,756',
       cardHolder: 'Peter Hans',
       validThru: '12/22',
       cardNumber: '3778 **** **** 1234',
@@ -80,8 +80,8 @@ const Transaction = () => {
   // Format helpers
   const formatAmount = (tx) =>
     tx.transaction_type === 'Deposit'
-      ? `+$${tx.amount.toLocaleString()}`
-      : `-$${tx.amount.toLocaleString()}`;
+      ? `+Rs ${tx.amount.toLocaleString()}`
+      : `-Rs ${tx.amount.toLocaleString()}`;
   const amountClass = (tx) =>
     tx.transaction_type === 'Deposit' ? 'text-green-500' : 'text-red-500';
   const directionIcon = (tx) =>
