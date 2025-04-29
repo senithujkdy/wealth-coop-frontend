@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   User,
   Briefcase,
@@ -28,6 +28,14 @@ const Loan = () => {
   const { accounts } = useAccount();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
+
+
+  const account_id = accounts && accounts[0]?.account_id;
+
+  // State for active loans fetched from API
+  const [activeLoans, setActiveLoans] = useState([]);
+  const [loadingLoans, setLoadingLoans] = useState(true);
+  const [errorLoans, setErrorLoans] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -103,78 +111,41 @@ const Loan = () => {
     },
   ];
 
-  // Active loans data
-  const activeLoans = [
-    {
-      id: "01",
-      amount: "$100,000",
-      leftToRepay: "$40,500",
-      duration: "8 Months",
-      interestRate: "12%",
-      installment: "$2,000 / month",
-    },
-    {
-      id: "02",
-      amount: "$500,000",
-      leftToRepay: "$250,000",
-      duration: "36 Months",
-      interestRate: "10%",
-      installment: "$8,000 / month",
-    },
-    {
-      id: "03",
-      amount: "$900,000",
-      leftToRepay: "$40,500",
-      duration: "12 Months",
-      interestRate: "12%",
-      installment: "$5,000 / month",
-    },
-    {
-      id: "04",
-      amount: "$50,000",
-      leftToRepay: "$40,500",
-      duration: "25 Months",
-      interestRate: "5%",
-      installment: "$2,000 / month",
-    },
-    {
-      id: "05",
-      amount: "$50,000",
-      leftToRepay: "$40,500",
-      duration: "5 Months",
-      interestRate: "16%",
-      installment: "$10,000 / month",
-    },
-    {
-      id: "06",
-      amount: "$80,000",
-      leftToRepay: "$25,500",
-      duration: "14 Months",
-      interestRate: "8%",
-      installment: "$2,000 / month",
-    },
-    {
-      id: "07",
-      amount: "$12,000",
-      leftToRepay: "$5,500",
-      duration: "9 Months",
-      interestRate: "13%",
-      installment: "$500 / month",
-    },
-    {
-      id: "08",
-      amount: "$160,000",
-      leftToRepay: "$100,800",
-      duration: "3 Months",
-      interestRate: "12%",
-      installment: "$900 / month",
-    },
-  ];
+  //   {
+  //     id: "01",
+  //     amount: "$100,000",
+  //     leftToRepay: "$40,500",
+  //     duration: "8 Months",
+  //     interestRate: "12%",
+  //     installment: "$2,000 / month",
+  //   },
+
 
   // Calculate totals
   const totalAmount = "$1,250,000";
   const totalLeftToRepay = "$750,000";
   const totalInstallment = "$50,000 / month";
+
+    // Fetch active loans when account_id is available
+    useEffect(() => {
+      if (!account_id) return;
+      setLoadingLoans(true);
+      setErrorLoans(null);
+  
+      fetch(`http://localhost:3000/api/approvals/approved/search?account_id=${account_id}`)
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch loans");
+          return res.json();
+        })
+        .then((data) => {
+          setActiveLoans(data); // Adjust if your API wraps data in a property
+          setLoadingLoans(false);
+        })
+        .catch((err) => {
+          setErrorLoans(err.message);
+          setLoadingLoans(false);
+        });
+    }, [account_id]);
 
   return (
     <div className="bg-gray-50 min-h-screen p-6">
@@ -326,9 +297,7 @@ const Loan = () => {
         {/* Active Loans Table */}
         <ActiveLoanTable
           activeLoans={activeLoans}
-          totalAmount={totalAmount}
-          totalLeftToRepay={totalLeftToRepay}
-          totalInstallment={totalInstallment}
+          
         />
       </div>
     </div>

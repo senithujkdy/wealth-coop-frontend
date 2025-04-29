@@ -1,6 +1,4 @@
-import React from 'react';
-
-const ActiveLoanTable = ({ activeLoans, onRepay }) => {
+const ActiveLoanTable = ({ activeLoans }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
       <h2 className="text-xl font-bold text-gray-800 p-6 pb-4">Active Loans Overview</h2>
