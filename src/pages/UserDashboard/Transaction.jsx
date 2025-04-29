@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown, Plus } from 'lucide-react';
+import { useAccount } from '../../context/AccountContext';
+
+const PAGE_SIZE = 10; // Number of transactions per page
 
 const Transaction = () => {
   const [activeTab, setActiveTab] = useState('All Transactions');
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Card data
+  const { accounts, loading: accountsLoading } = useAccount();
+  const accountId = accounts?.[0]?.account_id;
+
+  // Dummy cards data (replace with API if needed)
   const cards = [
     {
       id: 1,
@@ -25,57 +33,63 @@ const Transaction = () => {
     },
   ];
 
-  // Transaction data
-  const transactions = [
-    {
-      id: '#12548796',
-      description: 'Spotify Subscription',
-      type: 'Shopping',
-      card: '1234 ****',
-      date: '28 Jan, 12:30 AM',
-      amount: -2500,
-      direction: 'up',
-    },
-    {
-      id: '#12548796',
-      description: 'Freepik Sales',
-      type: 'Transfer',
-      card: '1234 ****',
-      date: '25 Jan, 10:40 PM',
-      amount: 750,
-      direction: 'down',
-    },
-    {
-      id: '#12548796',
-      description: 'Mobile Service',
-      type: 'Service',
-      card: '1234 ****',
-      date: '20 Jan, 10:40 PM',
-      amount: -150,
-      direction: 'up',
-    },
-    {
-      id: '#12548796',
-      description: 'Wilson',
-      type: 'Transfer',
-      card: '1234 ****',
-      date: '15 Jan, 03:29 PM',
-      amount: -1050,
-      direction: 'up',
-    },
-    {
-      id: '#12548796',
-      description: 'Emilly',
-      type: 'Transfer',
-      card: '1234 ****',
-      date: '14 Jan, 10:40 PM',
-      amount: 840,
-      direction: 'down',
-    },
-  ];
-
-  // Filter tabs
+  // Fetch transactions from API (with polling for real-time updates)
+  useEffect(() => {
+    if (!accountId) return;
+  
+    let isMounted = true;
+    const fetchTransactions = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`http://localhost:3000/api/transactions/account/${accountId}`);
+        const data = await res.json();
+        if (isMounted) setTransactions(data);
+      } catch (e) {
+        console.error('🚨 Failed to fetch transactions:', e);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+  
+    fetchTransactions();
+    const interval = setInterval(fetchTransactions, 10000); // Poll every 10s
+  
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [accountId]);
+  
+  // Tabs for filtering
   const tabs = ['All Transactions', 'Income', 'Expense'];
+
+  // Filter transactions by tab
+  const filteredTransactions = transactions.filter((tx) => {
+    if (activeTab === 'Income') return tx.transaction_type === 'Deposit';
+    if (activeTab === 'Expense') return tx.transaction_type === 'Withdrawal';
+    return true;
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredTransactions.length / PAGE_SIZE);
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  // Format helpers
+  const formatAmount = (tx) =>
+    tx.transaction_type === 'Deposit'
+      ? `+$${tx.amount.toLocaleString()}`
+      : `-$${tx.amount.toLocaleString()}`;
+  const amountClass = (tx) =>
+    tx.transaction_type === 'Deposit' ? 'text-green-500' : 'text-red-500';
+  const directionIcon = (tx) =>
+    tx.transaction_type === 'Deposit' ? (
+      <ArrowDown size={16} className="text-green-500" />
+    ) : (
+      <ArrowUp size={16} className="text-yellow-500" />
+    );
 
   return (
     <div className="bg-gray-50 min-h-screen p-6">
@@ -90,8 +104,8 @@ const Transaction = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
           {cards.map((card) => (
-            <div 
-              key={card.id} 
+            <div
+              key={card.id}
               className={`${
                 card.isActive ? 'bg-blue-600' : 'bg-white'
               } rounded-xl p-5 shadow-sm relative overflow-hidden`}
@@ -105,7 +119,6 @@ const Transaction = () => {
                   <div className={`w-10 h-6 ${card.isActive ? 'bg-white/20' : 'bg-gray-200'} rounded`}></div>
                 </div>
               </div>
-              
               <div className="flex justify-between items-end">
                 <div>
                   <p className={`${card.isActive ? 'text-blue-200' : 'text-gray-400'} text-xs mb-1`}>CARD HOLDER</p>
@@ -116,7 +129,6 @@ const Transaction = () => {
                   <p className={`font-medium ${card.isActive ? 'text-white' : 'text-gray-900'}`}>{card.validThru}</p>
                 </div>
               </div>
-              
               <div className="mt-4 flex items-center">
                 <p className={`text-xl tracking-widest ${card.isActive ? 'text-white' : 'text-gray-900'}`}>{card.cardNumber}</p>
                 <div className="ml-auto flex space-x-1">
@@ -131,7 +143,7 @@ const Transaction = () => {
         {/* Transactions Section */}
         <div className="mb-6">
           <h2 className="text-xl font-bold text-gray-800 mb-6">Recent Transactions</h2>
-          
+
           {/* Tabs */}
           <div className="border-b border-gray-200 mb-6">
             <div className="flex space-x-8">
@@ -143,14 +155,17 @@ const Transaction = () => {
                       ? 'text-blue-600 border-b-2 border-blue-600 font-medium'
                       : 'text-gray-500'
                   }`}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    setCurrentPage(1);
+                  }}
                 >
                   {tab}
                 </button>
               ))}
             </div>
           </div>
-          
+
           {/* Transactions Table */}
           <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
             <div className="overflow-x-auto">
@@ -160,72 +175,90 @@ const Transaction = () => {
                     <th className="px-6 py-3 font-medium">Description</th>
                     <th className="px-6 py-3 font-medium">Transaction ID</th>
                     <th className="px-6 py-3 font-medium">Type</th>
-                    <th className="px-6 py-3 font-medium">Card</th>
+                    <th className="px-6 py-3 font-medium">Account</th>
                     <th className="px-6 py-3 font-medium">Date</th>
                     <th className="px-6 py-3 font-medium">Amount</th>
-                    <th className="px-6 py-3 font-medium">Receipt</th>
+                    <th className="px-6 py-3 font-medium">Status</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((transaction, index) => (
-                    <tr key={index} className="border-b border-gray-100">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3">
-                            {transaction.direction === 'up' ? (
-                              <ArrowUp size={16} className="text-gray-500" />
-                            ) : (
-                              <ArrowDown size={16} className="text-gray-500" />
-                            )}
-                          </div>
-                          {transaction.description}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-gray-500">{transaction.id}</td>
-                      <td className="px-6 py-4 text-gray-500">{transaction.type}</td>
-                      <td className="px-6 py-4 text-gray-500">{transaction.card}</td>
-                      <td className="px-6 py-4 text-gray-500">{transaction.date}</td>
-                      <td className={`px-6 py-4 font-medium ${transaction.amount > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {transaction.amount > 0 ? `+$${transaction.amount}` : `-$${Math.abs(transaction.amount)}`}
-                      </td>
-                      <td className="px-6 py-4">
-                        <button className="text-blue-600 border border-blue-600 rounded-full px-4 py-1 text-sm">
-                          Download
-                        </button>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
+                        Loading transactions...
                       </td>
                     </tr>
-                  ))}
+                  ) : paginatedTransactions.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-400">
+                        No transactions found.
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedTransactions.map((tx, index) => (
+                      <tr key={tx._id || index} className="border-b border-gray-100">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3">
+                              {directionIcon(tx)}
+                            </div>
+                            {tx.transaction_type}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-gray-500">{tx.transaction_id}</td>
+                        <td className="px-6 py-4 text-gray-500">{tx.transaction_type}</td>
+                        <td className="px-6 py-4 text-gray-500">{tx.account_id}</td>
+                        <td className="px-6 py-4 text-gray-500">
+                          {new Date(tx.transaction_date).toLocaleString()}
+                        </td>
+                        <td className={`px-6 py-4 font-medium ${amountClass(tx)}`}>
+                          {formatAmount(tx)}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              tx.status === 'Completed'
+                                ? 'bg-green-100 text-green-800'
+                                : tx.status === 'Pending'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}
+                          >
+                            {tx.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
-          
+
           {/* Pagination */}
           <div className="flex justify-end items-center">
-            <button 
+            <button
               className="flex items-center text-blue-600 mr-4"
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
             >
               <ChevronLeft size={16} className="mr-1" /> Previous
             </button>
-            
-            {[1, 2, 3, 4].map((page) => (
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
                 key={page}
                 className={`w-8 h-8 flex items-center justify-center rounded-full mx-1 ${
-                  currentPage === page
-                    ? 'bg-blue-600 text-white'
-                    : 'text-blue-600'
+                  currentPage === page ? 'bg-blue-600 text-white' : 'text-blue-600'
                 }`}
                 onClick={() => setCurrentPage(page)}
               >
                 {page}
               </button>
             ))}
-            
-            <button 
+            <button
               className="flex items-center text-blue-600 ml-4"
-              onClick={() => setCurrentPage(Math.min(4, currentPage + 1))}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
             >
               Next <ChevronRight size={16} className="ml-1" />
             </button>
