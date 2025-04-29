@@ -2,12 +2,16 @@ import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import AccountCreationPopup from '../../AccountCreattionPopUp/AccountCreationPopup'; // Import the popup component
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  
+  // State for the account creation popup
+  const [showAccountPopup, setShowAccountPopup] = useState(false);
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -16,7 +20,7 @@ const Register = () => {
     username: '',
     password: '',
     confirmPassword: '',
-    role: 'customer' // default new registered users to customer (or let them pick role later if needed)
+    role: 'customer' // default new registered users to customer
   });
 
   const togglePasswordVisibility = () => {
@@ -57,12 +61,18 @@ const Register = () => {
       });
 
       const data = await res.json();
+      console.log(data); // Log the response for debugging
 
       if (res.ok) {
+        // Important: Call login with the response data to ensure AuthContext is updated
         login(data);  // Save user to AuthContext
-        if (data.role === 'admin') navigate('/admin/dashboard');
-        else if (data.role === 'staff') navigate('/admin/dashboard');
-        else navigate('/'); // go to customer dashboard
+        
+        // Show the account creation popup if the user is a customer
+        if (data.role === 'customer') {
+          setShowAccountPopup(true);
+        } else if (data.role === 'admin' || data.role === 'staff') {
+          navigate('/admin/dashboard');
+        }
       } else {
         alert(data.error || "Registration failed");
       }
@@ -70,6 +80,11 @@ const Register = () => {
       console.error('🚨 Registration Error:', err);
       alert('Something went wrong.');
     }
+  };
+
+  // Handle successful account creation
+  const handleAccountCreated = () => {
+    navigate('/'); // Navigate to customer dashboard after account creation
   };
 
   return (
@@ -88,7 +103,7 @@ const Register = () => {
         <div className="flex-1">
           <h1 className="text-3xl font-bold mb-4">Register</h1>
           <p className="text-gray-400 mb-8">
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+            Create an account to manage your banking needs.
           </p>
 
 
@@ -208,6 +223,7 @@ const Register = () => {
                   id="terms"
                   type="checkbox"
                   className="w-4 h-4 border border-gray-300 rounded accent-blue-600 focus:ring-blue-500"
+                  required
                 />
               </div>
               <div className="ml-3 text-sm">
@@ -235,17 +251,15 @@ const Register = () => {
 
       {/* Right Side - Image */}
       <div className="hidden lg:block lg:w-1/2 bg-blue-700 relative overflow-hidden">
+        {/* Content remains the same */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-blue-900">
-          {/* Decorative circles */}
           <div className="absolute top-10 right-10 w-16 h-16 border-2 border-blue-400 rounded-full opacity-30"></div>
           <div className="absolute bottom-40 right-40 w-24 h-24 border-2 border-blue-400 rounded-full opacity-20"></div>
           <div className="absolute bottom-20 left-1/4 w-12 h-12 border-2 border-blue-400 rounded-full opacity-30"></div>
         </div>
 
-        {/* Financial illustration */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="relative w-4/5 h-4/5 flex items-center justify-center">
-            {/* Phone with security illustration */}
             <div className="relative">
               <div className="w-64 h-96 bg-pink-400 rounded-3xl shadow-2xl transform rotate-12 relative">
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -263,14 +277,12 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Money/cash illustration */}
             <div className="absolute top-20 left-20">
               <div className="w-32 h-20 bg-green-400 rounded shadow-md transform -rotate-6 mb-1"></div>
               <div className="w-32 h-20 bg-green-500 rounded shadow-md transform -rotate-3 mb-1"></div>
               <div className="w-32 h-20 bg-green-600 rounded shadow-md"></div>
             </div>
 
-            {/* Credit card */}
             <div className="absolute bottom-24 right-24">
               <div className="w-48 h-28 bg-gray-800 rounded-lg shadow-xl transform rotate-12 p-3">
                 <div className="w-10 h-6 bg-yellow-500 rounded"></div>
@@ -282,7 +294,6 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Charts/graph illustration */}
             <div className="absolute bottom-16 left-24">
               <div className="flex items-end space-x-2">
                 <div className="w-6 h-12 bg-yellow-400 rounded-t"></div>
@@ -304,6 +315,16 @@ const Register = () => {
           </div>
         </div>
       </div>
+
+      {/* Account Creation Popup */}
+      <AccountCreationPopup 
+        isOpen={showAccountPopup}
+        onClose={() => {
+          setShowAccountPopup(false);
+          navigate('/'); // Redirect to home if they close the popup without creating an account
+        }}
+        onSuccess={handleAccountCreated}
+      />
     </div>
   );
 };

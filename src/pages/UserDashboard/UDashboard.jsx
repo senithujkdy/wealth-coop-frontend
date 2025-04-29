@@ -1,8 +1,33 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '../../context/AuthContext'; // make sure correct path
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const UDashboard = () => {
-  // Sample data for the weekly activity chart
+  const { user } = useAuth();
+  const [accounts, setAccounts] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const res = await fetch(`http://localhost:3000/api/accounts/user/${user.user_id}`);
+        const data = await res.json();
+        console.log('📦 Accounts Data:', data);
+        setAccounts(data.accounts || []);
+        setLoading(false);
+      } catch (error) {
+        console.error('🚨 Failed to fetch accounts:', error);
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchAccounts();
+    }
+  }, [user]);
+
+  // Sample weekly data
   const weeklyData = [
     { name: 'Sat', deposit: 230, withdraw: 480 },
     { name: 'Sun', deposit: 110, withdraw: 330 },
@@ -12,8 +37,8 @@ const UDashboard = () => {
     { name: 'Thu', deposit: 230, withdraw: 380 },
     { name: 'Fri', deposit: 320, withdraw: 380 },
   ];
-  
-  // Sample data for recent transactions
+
+  // Sample recent transactions
   const recentTransactions = [
     {
       id: 1,
@@ -59,7 +84,6 @@ const UDashboard = () => {
     },
   ];
 
-  // Custom tooltip for the chart
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
@@ -83,16 +107,36 @@ const UDashboard = () => {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Balance and Account Info */}
           <div className="bg-white rounded-xl shadow-sm p-6 flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="text-xl text-blue-400 mb-2">Balance</h3>
-                <p className="text-3xl font-bold text-gray-800">$2,356</p>
+            <h2 className="text-2xl font-bold text-gray-700 mb-6">Account Details</h2>
+
+            {loading ? (
+              <p className="text-gray-400">Loading accounts...</p>
+            ) : accounts.length > 0 ? (
+              <div className="space-y-6">
+                {accounts.map((acc) => (
+                  <div key={acc.account_id} className="p-4 border border-gray-100 rounded-lg shadow-sm">
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-500">Account Number:</span>
+                      <span className="font-semibold">{acc.account_number}</span>
+                    </div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-500">Balance:</span>
+                      <span className="font-semibold">{acc.balance} {acc.currency}</span>
+                    </div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-gray-500">Account Type:</span>
+                      <span className="font-semibold">{acc.account_type}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Created At:</span>
+                      <span className="font-semibold">{new Date(acc.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div>
-                <h3 className="text-xl text-blue-400 mb-2">Account Name</h3>
-                <p className="text-3xl font-bold text-gray-800">Daniel Anderson</p>
-              </div>
-            </div>
+            ) : (
+              <p className="text-gray-400">No accounts found.</p>
+            )}
           </div>
 
           {/* Recent Transactions */}
@@ -118,7 +162,7 @@ const UDashboard = () => {
         </div>
 
         {/* Weekly Activity Section */}
-        <div className="mt-4">
+        <div className="mt-8">
           <h2 className="text-2xl font-semibold text-gray-700 mb-6">Weekly Activity</h2>
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="h-80">
@@ -135,19 +179,22 @@ const UDashboard = () => {
                   <Bar dataKey="deposit" fill="#4FD1C5" radius={[10, 10, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-              <div className="flex justify-end space-x-8">
+
+              <div className="flex justify-end space-x-8 mt-4">
                 <div className="flex items-center">
                   <div className="w-4 h-4 rounded-full bg-teal-400 mr-2"></div>
-                  <span className="text-gray-600">Diposit</span>
+                  <span className="text-gray-600">Deposit</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-4 h-4 rounded-full bg-pink-400 mr-2"></div>
+                  <div className="w-4 h-4 rounded-full bg-blue-400 mr-2"></div>
                   <span className="text-gray-600">Withdraw</span>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );
