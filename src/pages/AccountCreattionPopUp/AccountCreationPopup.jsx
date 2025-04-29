@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { X } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
-const AccountCreationPopup = ({ isOpen, onClose, onSuccess }) => {
+const AccountCreationPopup = ({ isOpen, onSuccess }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,12 +19,11 @@ const AccountCreationPopup = ({ isOpen, onClose, onSuccess }) => {
       const timer = setTimeout(() => {
         setSuccess(false);
         onSuccess && onSuccess();
-        onClose();
       }, 2000);
       
       return () => clearTimeout(timer);
     }
-  }, [success, onClose, onSuccess]);
+  }, [success, onSuccess]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,7 +49,7 @@ const AccountCreationPopup = ({ isOpen, onClose, onSuccess }) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user_id: user.user_id, // Use user_id instead of id
+          user_id: user.user_id,
           account_type: formData.account_type,
           balance: formData.balance,
           currency: formData.currency
@@ -77,18 +76,10 @@ const AccountCreationPopup = ({ isOpen, onClose, onSuccess }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md relative overflow-hidden">
-        {/* Close button */}
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-        >
-          <X size={20} />
-        </button>
-        
         {/* Header */}
         <div className="bg-blue-700 p-6 text-white">
           <h2 className="text-xl font-bold">Create Your Bank Account</h2>
-          <p className="mt-1 text-blue-100">Get started with your new account</p>
+          <p className="mt-1 text-blue-100">Complete this step to access your dashboard</p>
         </div>
         
         {/* Success message */}
@@ -110,14 +101,20 @@ const AccountCreationPopup = ({ isOpen, onClose, onSuccess }) => {
               </div>
             )}
             
-            {/* Debug info */}
-            {/* {user && (
-              <div className="bg-gray-100 p-3 mb-4 rounded text-xs">
-                <p>Logged in as: {user.full_name}</p>
-                <p>User ID: {user.user_id}</p>
+            {/* Required Notice */}
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertCircle className="h-5 w-5 text-yellow-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-yellow-700">
+                    You must create a bank account to access the dashboard.
+                  </p>
+                </div>
               </div>
-            )}
-             */}
+            </div>
+            
             <div className="space-y-4">
               {/* Account Type */}
               <div>

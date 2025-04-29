@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import AccountCreationPopup from '../../AccountCreattionPopUp/AccountCreationPopup';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  // Initialize popup state to false - will be set to true if user has no accounts
+  const [showAccountPopup, setShowAccountPopup] = useState(false);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -37,9 +40,47 @@ const Login = () => {
 
       if (res.ok) {
         login(data);
-        if (data.role === 'admin') navigate('/admin/dashboard');
-        else if (data.role === 'staff') navigate('/admin/dashboard');
-        else navigate('/');
+        
+        // For customer, check if they have any accounts
+        if (data.role === 'customer') {
+          try {
+            console.log('Checking accounts for user_id:', data.user_id);
+            
+            const accountRes = await fetch(`http://localhost:3000/api/accounts/user/${data.user_id}`, {
+              headers: { 
+                'Authorization': `Bearer ${data.token}` 
+              }
+            });
+            
+            if (!accountRes.ok) {
+              throw new Error(`API returned ${accountRes.status}: ${accountRes.statusText}`);
+            }
+            
+            const accountData = await accountRes.json();
+            console.log('Account data received:', accountData);
+            
+            // Different ways the API might structure the response
+            const accounts = accountData.accounts || accountData.data || accountData;
+            const hasAccounts = accounts && (Array.isArray(accounts) ? accounts.length > 0 : Object.keys(accounts).length > 0);
+            
+            if (!hasAccounts) {
+              console.log('No accounts found, showing popup');
+              setShowAccountPopup(true);
+            } else {
+              console.log('Accounts found, navigating to dashboard');
+              navigate('/');
+            }
+          } catch (err) {
+            console.error('Error checking accounts:', err);
+            console.log('Error occurred, showing popup as fallback');
+            // If error occurs when checking accounts, show popup to be safe
+            setShowAccountPopup(true);
+          }
+        } else if (data.role === 'admin' || data.role === 'staff') {
+          navigate('/admin/dashboard');
+        } else if (data.role === 'admin' || data.role === 'staff') {
+          navigate('/admin/dashboard');
+        }
       } else {
         alert(data.error || 'Login failed');
       }
@@ -48,6 +89,17 @@ const Login = () => {
       alert('Something went wrong');
     }
   };
+  
+  // Handle successful account creation
+  const handleAccountCreated = () => {
+    setShowAccountPopup(false); // First hide the popup
+    navigate('/'); // Then navigate to customer dashboard after account creation
+  };
+  
+  // Debug effect to track popup state changes
+  useEffect(() => {
+    console.log('showAccountPopup state changed:', showAccountPopup);
+  }, [showAccountPopup]);
 
   return (
     <div className="bg-white min-h-screen flex">
@@ -65,18 +117,18 @@ const Login = () => {
         <div className="flex-1">
           <h1 className="text-3xl font-bold mb-4">Login</h1>
           <p className="text-gray-400 mb-8">
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+            Enter your credentials to access your account and manage your finances.
           </p>
 
           <form onSubmit={handleLogin} className="space-y-6">
             {/* Email */}
             <div>
-              <label htmlFor="email" className="block mb-2 text-gray-700">User name</label>
+              <label htmlFor="email" className="block mb-2 text-gray-700">Email address</label>
               <input
                 type="email"
                 id="email"
                 name="email"
-                placeholder="Lorem lorem"
+                placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -117,12 +169,12 @@ const Login = () => {
                   className="w-4 h-4 border border-gray-300 rounded accent-blue-600 focus:ring-blue-500"
                 />
                 <label htmlFor="remember" className="ml-2 text-sm text-gray-500">
-                  Remember me?
+                  Remember me
                 </label>
               </div>
               <div>
-                <a href="#" className="text-sm text-gray-500 hover:text-blue-600">
-                  Forgot Password ?
+                <a href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-800">
+                  Forgot Password?
                 </a>
               </div>
             </div>
@@ -135,7 +187,7 @@ const Login = () => {
               Login
             </button>
 
-            {/* Register Link - Optional */}
+            {/* Register Link */}
             <p className="text-center text-gray-600">
               Don't have an account? <a href="/register" className="text-blue-600 hover:underline">Register</a>
             </p>
@@ -167,7 +219,7 @@ const Login = () => {
                         <circle cx="12" cy="16" r="1"></circle>
                       </svg>
                     </div>
-                    <div className="transform rotate-180 text-center text-xl font-bold">Secure Payment</div>
+                    <div className="text-center text-xl font-bold">Secure Banking</div>
                   </div>
                 </div>
               </div>
@@ -214,6 +266,13 @@ const Login = () => {
           </div>
         </div>
       </div>
+      
+      {/* Account Creation Popup - Using React Portal for better modal rendering */}
+      {showAccountPopup && (
+        <AccountCreationPopup 
+          onAccountCreated={handleAccountCreated} 
+        />
+      )}
     </div>
   );
 };

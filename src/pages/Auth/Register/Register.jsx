@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import AccountCreationPopup from '../../AccountCreattionPopUp/AccountCreationPopup'; // Import the popup component
+import AccountCreationPopup from '../../AccountCreattionPopUp/AccountCreationPopup';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -316,13 +316,9 @@ const Register = () => {
         </div>
       </div>
 
-      {/* Account Creation Popup */}
+      {/* Account Creation Popup - Not closable during registration */}
       <AccountCreationPopup 
         isOpen={showAccountPopup}
-        onClose={() => {
-          setShowAccountPopup(false);
-          navigate('/'); // Redirect to home if they close the popup without creating an account
-        }}
         onSuccess={handleAccountCreated}
       />
     </div>
