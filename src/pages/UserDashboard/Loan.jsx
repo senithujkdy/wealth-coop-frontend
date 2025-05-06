@@ -353,7 +353,7 @@ const handleRepay = (loan) => {
               });
               const data = await res.json();
               if (res.ok) {
-                alert(`Repayment successful: ${data.message}`);
+                // alert(`Repayment successful: ${data.message}`);
                 setShowRepayModal(false);
               } else {
                 alert(data.error || "Repayment failed.");

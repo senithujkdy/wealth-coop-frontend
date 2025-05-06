@@ -41,7 +41,7 @@ const Accounts = () => {
     },
     {
       id: 3,
-      name: 'Emilly Wilson',
+      name: 'Daniel Anderson',
       date: '25 Jan 2021',
       category: 'Transfer',
       cardLast4: '1234',
@@ -105,7 +105,7 @@ const Accounts = () => {
         {/* Main Content */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Transaction History */}
-          <div className="md:col-span-2 bg-white rounded-xl p-6 shadow-sm">
+          <div className="md:col-span-3 bg-white rounded-xl p-6 shadow-sm ">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-gray-800">Last Transaction</h2>
               <button className="text-blue-600 font-medium">See All</button>
@@ -148,51 +148,7 @@ const Accounts = () => {
             </div>
           </div>
 
-          {/* Card Details and Spending */}
-          <div className="space-y-6">
-            {/* Card Component */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800">My Card</h2>
-                <button className="text-blue-600 font-medium">See All</button>
-              </div>
-              
-              <div className="bg-blue-600 rounded-xl p-5 text-white relative overflow-hidden">
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <p className="text-blue-200 text-sm mb-1">Balance</p>
-                    <p className="text-2xl font-bold">Rs 5,756</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="w-10 h-6 bg-white/20 rounded"></div>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between items-end">
-                  <div>
-                    <p className="text-blue-200 text-xs mb-1">CARD HOLDER</p>
-                    <p className="font-medium">{user?.full_name || 'Account Holder'}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-blue-200 text-xs mb-1">VALID THRU</p>
-                    <p className="font-medium">12/22</p>
-                  </div>
-                </div>
-                
-                <div className="mt-4 flex items-center">
-                  <p className="text-xl tracking-widest">3778 **** **** 1234</p>
-                  {/* <p className="text-xl tracking-widest">
-  {account ? `${account.account_number.slice(0, 4)} **** **** ${account.account_number.slice(-4)}` : '****'}
-</p> */}
-
-                  <div className="ml-auto flex space-x-1">
-                    <div className="w-6 h-6 bg-white/30 rounded-full"></div>
-                    <div className="w-6 h-6 bg-white/20 rounded-full"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+ 
         </div>
       </div>
     </div>
@@ -200,3 +156,5 @@ const Accounts = () => {
 };
 
 export default Accounts;
+
+

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import _ from 'lodash';
+import { Outlet, Link } from "react-router-dom";
+import Card from '../../components/layout/Card/Card';
 
 const UDashboard = () => {
   const { user } = useAuth();
@@ -184,48 +186,107 @@ const UDashboard = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen p-6">
       <div className="max-w-6xl mx-auto">
         {/* Account Summary Section */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold text-gray-700">Account Summary</h2>
-          <a href="#" className="text-blue-700 hover:text-blue-900">See All</a>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Account Summary</h2>
+          <a href="#" className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+            See All
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
         </div>
-
+  
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Balance and Account Info */}
-          <div className="bg-white rounded-xl shadow-sm p-6 flex-1">
-            <h2 className="text-2xl font-bold text-gray-700 mb-6">Account Details</h2>
-
+          <div className="bg-white rounded-xl shadow p-6 flex-1">
+            <div className="flex items-center justify-between mb-6">
+              {/* <h2 className="text-xl font-bold text-gray-800">Account Details</h2> */}
+              <span className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full">Active</span>
+            </div>
+  
             {loading ? (
-              <p className="text-gray-400">Loading accounts...</p>
+              <div className="flex justify-center items-center py-10">
+                <div className="animate-pulse flex space-x-4">
+                  <div className="rounded-full bg-gray-200 h-10 w-10"></div>
+                  <div className="flex-1 space-y-4 py-1">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-200 rounded"></div>
+                      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ) : accounts.length > 0 ? (
               <div className="space-y-6">
                 {accounts.map((acc) => (
-                  <div key={acc.account_id} className="p-4 border border-gray-100 rounded-lg shadow-sm">
-                    <div className="flex justify-between mb-2">
-                      <span className="text-gray-500">Account Number:</span>
-                      <span className="font-semibold">{acc.account_number}</span>
+                  <div key={acc.account_id} className="p-5 border border-gray-100 rounded-lg hover:border-blue-100 hover:bg-blue-50 transition-all duration-200">
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <span className="text-sm text-gray-500">Account Type</span>
+                        <div className="font-semibold text-lg text-gray-800 flex items-center">
+                          {acc.account_type}
+                          {acc.account_type === "Savings" && (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-sm text-gray-500">Account Number</span>
+                        <div className="font-semibold text-lg text-gray-800">{acc.account_number}</div>
+                      </div>
                     </div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-gray-500">Balance:</span>
-                      <span className="font-semibold">{acc.balance} {acc.currency}</span>
+                    
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <span className="text-sm text-gray-500">Available Balance</span>
+                        <div className="font-bold text-2xl text-gray-800">
+                          {typeof acc.balance === 'number' 
+                            ? new Intl.NumberFormat('en-US', { style: 'currency', currency: acc.currency }).format(acc.balance)
+                            : `${acc.balance} ${acc.currency}`}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-sm text-gray-500">Created On</span>
+                        <div className="font-semibold text-gray-800">
+                          {new Date(acc.createdAt).toLocaleDateString(undefined, {
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric'
+                          })}
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-gray-500">Account Type:</span>
-                      <span className="font-semibold">{acc.account_type}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Created At:</span>
-                      <span className="font-semibold">{new Date(acc.createdAt).toLocaleDateString()}</span>
+                    
+                    <div className="flex justify-end mt-2">
+                      <button className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                        <Link to="/transaction">View transactions</Link>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400">No accounts found.</p>
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                <p className="text-gray-500 mb-4">No accounts found.</p>
+                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                  Add New Account
+                </button>
+              </div>
             )}
           </div>
+  
 
           {/* Recent Transactions */}
           <div className="bg-white rounded-xl shadow-sm p-6 lg:w-2/5">
@@ -265,6 +326,8 @@ const UDashboard = () => {
             )}
           </div>
         </div>
+
+<Card balance={54}/>
 
         {/* Weekly Activity Section */}
         <div className="mt-8">

@@ -1,4 +1,4 @@
-import { Home, User, DollarSign, CreditCard, Settings } from 'lucide-react';
+import { Home, User, Briefcase, CreditCard, Settings } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 const Sidebar = () => {
@@ -6,7 +6,7 @@ const Sidebar = () => {
     { name: "Dashboard", path: "/overview", icon: <Home className="w-5 h-5" /> },
     { name: "Transactions", path: "/transaction", icon: <CreditCard className="w-5 h-5" /> },
     { name: "Accounts", path: "/accounts", icon: <User className="w-5 h-5" /> },
-    { name: "Loans", path: "/loans", icon: <DollarSign className="w-5 h-5" /> },
+    { name: "Loans", path: "/loans", icon: <Briefcase className="w-5 h-5" /> },
     { name: "Settings", path: "/settings", icon: <Settings className="w-5 h-5" /> },
     ,
   ];
