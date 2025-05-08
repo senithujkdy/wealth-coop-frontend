@@ -9,7 +9,7 @@ const TransactionPortal = () => {
   const { accounts, refreshAccounts } = useAccount();
 
   // State management
-  const [activeTab, setActiveTab] = useState("deposit");
+  const [activeTab, setActiveTab] = useState("withdraw");
   const [depositAmount, setDepositAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [receiverAccountId, setReceiverAccountId] = useState("");
@@ -105,13 +105,20 @@ const TransactionPortal = () => {
     if (!receiverAccountId) {
       setTransactionMessage({
         type: "error",
-        text: "Please enter a receiver account ID"
+        text: "Please enter a receiver account number"
       });
       return;
     }
 
     setIsSubmitting(true);
     try {
+      if (receiverAccountId === currentAccount.account_number) {
+        setTransactionMessage({
+          type: "error",
+          text: "You cannot transfer to your own account"
+        });
+        return;
+      }
       const response = await fetch(
         `http://localhost:3000/api/transactions/withdraw/${receiverAccountId}`,
         {
@@ -155,7 +162,7 @@ const TransactionPortal = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'LKR'
     }).format(amount);
   };
 
@@ -184,7 +191,7 @@ const TransactionPortal = () => {
                   {formatCurrency(currentAccount.balance)}
                 </div>
                 <div className="text-sm text-gray-500 mt-1">
-                  Account ID: {currentAccount.account_id}
+                  Your Account No: {currentAccount.account_number}
                 </div>
               </div>
               <button 
@@ -202,22 +209,7 @@ const TransactionPortal = () => {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
           {/* Tabs */}
           <div className="flex border-b border-gray-100">
-            <button
-              className={`flex-1 py-4 text-center font-medium ${
-                activeTab === "deposit"
-                  ? "text-blue-600 border-b-2 border-blue-600"
-                  : "text-gray-500"
-              }`}
-              onClick={() => {
-                setActiveTab("deposit");
-                setTransactionMessage(null);
-              }}
-            >
-              <div className="flex items-center justify-center">
-                <ArrowDownCircle size={18} className="mr-2" />
-                Deposit
-              </div>
-            </button>
+            
             <button
               className={`flex-1 py-4 text-center font-medium ${
                 activeTab === "withdraw"
@@ -250,51 +242,19 @@ const TransactionPortal = () => {
           )}
 
           {/* Deposit Form */}
-          {activeTab === "deposit" && (
-            <div className="p-6">
-              <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Amount to Deposit</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <DollarSign size={18} className="text-gray-400" />
-                  </div>
-                  <input
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    value={depositAmount}
-                    onChange={(e) => setDepositAmount(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter amount"
-                    required
-                  />
-                </div>
-              </div>
-              <button
-                onClick={(e) => handleDeposit(e)}
-                disabled={isSubmitting || !depositAmount}
-                className={`w-full py-3 rounded-lg font-medium ${
-                  isSubmitting || !depositAmount
-                    ? "bg-blue-300 text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
-                }`}
-              >
-                {isSubmitting ? "Processing..." : "Deposit Funds"}
-              </button>
-            </div>
-          )}
+          
 
           {/* Withdraw/Transfer Form */}
           {activeTab === "withdraw" && (
             <div className="p-6">
               <div className="mb-4">
-                <label className="block text-gray-700 mb-2">Recipient Account ID</label>
+                <label className="block text-gray-700 mb-2">Recipient Account Number</label>
                 <input
                   type="text"
                   value={receiverAccountId}
                   onChange={(e) => setReceiverAccountId(e.target.value)}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter recipient's account ID"
+                  placeholder="Enter recipient's account number"
                   required
                 />
               </div>
