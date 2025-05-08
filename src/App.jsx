@@ -18,19 +18,17 @@ import Transaction from './pages/UserDashboard/Transaction';
 import LoanDefault from "./pages/Predictions/LoanDefault";
 import LoanAmountForecast from "./pages/Predictions/LoanForcast";
 import LoanRepaymentPrediction from "./pages/Predictions/LoanRepayment";
+import UDashboard from './pages/UserDashboard/UDashboard'; 
+import Transaction from './pages/UserDashboard/Transaction'; 
+import NotFound from './pages/NotFound/NotFound';
+
+import AdminRoutes from './routes/AdminRoutes';
+import CustomerRoutes from './routes/CutomerRoutes';
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Admin Dashboard Wrapper */}
-        <Route path="/admin" element={<AdminDashboard />}>
-          <Route index element={<Dashboard />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="statistics" element={<Statistics />} />
-          <Route path="predictions" element={<Prediction />} />
-          <Route path="services" element={<Services />} />
-        </Route>
 
         {/* User Dashboard wrapper */}
         <Route path="/" element={<UserDashboard />}>
@@ -62,3 +60,40 @@ function App() {
 }
 
 export default App
+        {/* 👤 User (Customer/Staff) Area */}
+        <Route element={<CustomerRoutes />}>
+          <Route path="/" element={<UserDashboard />}>
+            <Route index element={<UDashboard />} />
+            <Route path="overview" element={<UDashboard />} />
+            <Route path="accounts" element={<Accounts />} />
+            <Route path="loans" element={<Loan />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="transaction" element={<Transaction />} />
+          </Route>
+        </Route>
+
+        {/* 🛡️ Admin/Staff-only Routes */}
+        <Route element={<AdminRoutes />}>
+          <Route path="/admin" element={<AdminDashboard />}>
+            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="statistics" element={<Statistics />} />
+            <Route path="predictions" element={<Prediction />} />
+            <Route path="services" element={<Services />} />
+          </Route>
+        </Route>
+
+        {/* Public routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/landing" element={<Landing />} />
+        <Route path="*" element={<NotFound />} />
+        
+      </Routes>
+    </Router>
+  );
+}
+
+
+export default App
+

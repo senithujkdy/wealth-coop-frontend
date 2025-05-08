@@ -9,6 +9,7 @@ const UserDashboard = () => {
   const pageTitles = {
     "/overview": "Overview",
     "/accounts": "Accounts",
+    "/transaction": "Transactions",
     "/loans": "Loans",
     "/settings": "Settings",
   };

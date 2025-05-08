@@ -1,18 +1,18 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const AdminRoutes = () => {
+const CustomerRoutes = () => {
   const { user } = useAuth();
 
   if (!user) return <Navigate to="/login" />;
 
-  // Allow both admin and staff to access admin dashboard
-  if (user.role === 'admin' || user.role === 'staff') {
+  // Allow only customers and admins
+  if (user.role === 'customer' || user.role === 'admin') {
     return <Outlet />;
   }
 
-  // Block customers
+  // Block staff users
   return <Navigate to="/notfound" />;
 };
 
-export default AdminRoutes;
+export default CustomerRoutes;
