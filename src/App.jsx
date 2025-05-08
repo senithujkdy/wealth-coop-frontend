@@ -12,8 +12,6 @@ import UserDashboard from './pages/UserDashboard/UserDashboard';
 import Accounts from './pages/UserDashboard/Accounts';
 import Loan from './pages/UserDashboard/Loan';
 import Settings from './pages/Settings/Setttings';
-import UDashboard from './pages/UserDashboard/UDashboard';
-import Transaction from './pages/UserDashboard/Transaction';
 
 import LoanDefault from "./pages/Predictions/LoanDefault";
 import LoanAmountForecast from "./pages/Predictions/LoanForcast";
@@ -29,37 +27,6 @@ function App() {
   return (
     <Router>
       <Routes>
-
-        {/* User Dashboard wrapper */}
-        <Route path="/" element={<UserDashboard />}>
-          <Route index element={<UDashboard />} />
-          <Route path="overview" element={<UDashboard />} />
-          <Route path="accounts" element={<Accounts />} />
-          <Route path="loans" element={<Loan />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="transaction" element={<Transaction />} />
-        </Route>
-
-        {/* Register */}
-        <Route path='/register' element={<Register />} />
-
-        {/* Login */}
-        <Route path='/login' element={<Login />} />
-
-        {/* Landing */}
-        <Route path='/landing' element={<Landing />} />
-
-        {/* Prediction Model Pages */}
-        <Route path="/default" element={<LoanDefault />} />
-        <Route path="/forecast" element={<LoanAmountForecast />} />
-        <Route path="/repayment" element={<LoanRepaymentPrediction />} />
-
-      </Routes>
-    </Router>
-  )
-}
-
-export default App
         {/* 👤 User (Customer/Staff) Area */}
         <Route element={<CustomerRoutes />}>
           <Route path="/" element={<UserDashboard />}>
@@ -88,10 +55,14 @@ export default App
         <Route path="/register" element={<Register />} />
         <Route path="/landing" element={<Landing />} />
         <Route path="*" element={<NotFound />} />
-        
-      </Routes>
+
+        {/* Prediction Model Pages */}
+        <Route path="/default" element={<LoanDefault />} />
+        <Route path="/forecast" element={<LoanAmountForecast />} />
+        <Route path="/repayment" element={<LoanRepaymentPrediction />} />
+        </Routes>
     </Router>
-  );
+  )
 }
 
 
