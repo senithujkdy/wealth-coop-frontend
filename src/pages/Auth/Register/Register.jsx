@@ -3,6 +3,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AccountCreationPopup from '../../AccountCreattionPopUp/AccountCreationPopup';
+import Logo from '../../../assets/Logo.png'
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -93,10 +94,9 @@ const Register = () => {
       <div className="w-full lg:w-1/2 p-10 lg:p-16 flex flex-col">
         {/* Logo */}
         <div className="mb-10">
-          <svg width="50" height="50" viewBox="0 0 50 50" fill="none">
-            <rect width="30" height="30" fill="#0A2463" />
-            <rect x="30" y="0" width="20" height="20" fill="#E63946" />
-          </svg>
+          <img src={Logo} 
+                    className='h-15 w-15'
+                    alt="" />
         </div>
 
         {/* Form Content */}

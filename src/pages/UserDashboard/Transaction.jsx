@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown, Plus } from 'lucide-react';
 import { useAccount } from '../../context/AccountContext';
 import TransactionPortal from './TransactionPortal';
+import TransactionDetails from '../../components/layout/TransactionDetails/TransactionDetails';
 
 const PAGE_SIZE = 10; // Number of transactions per page
 
@@ -10,6 +11,7 @@ const Transaction = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   const { accounts, loading: accountsLoading } = useAccount();
   const accountId = accounts?.[0]?.account_id;
@@ -95,11 +97,21 @@ const Transaction = () => {
       <ArrowUp size={16} className="text-yellow-500" />
     );
 
+  // Handle transaction click
+  const handleTransactionClick = (transaction) => {
+    setSelectedTransaction(transaction);
+  };
+
+  // Close transaction details modal
+  const closeTransactionDetails = () => {
+    setSelectedTransaction(null);
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen p-6">
       <div className="max-w-6xl mx-auto">
 
-    <TransactionPortal/>
+        <TransactionPortal/>
 
         {/* Transactions Section */}
         <div className="mb-6">
@@ -157,7 +169,11 @@ const Transaction = () => {
                     </tr>
                   ) : (
                     paginatedTransactions.map((tx, index) => (
-                      <tr key={tx._id || index} className="border-b border-gray-100">
+                      <tr 
+                        key={tx._id || index} 
+                        className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                        onClick={() => handleTransactionClick(tx)}
+                      >
                         <td className="px-6 py-4">
                           <div className="flex items-center">
                             <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3">
@@ -226,6 +242,14 @@ const Transaction = () => {
           </div>
         </div>
       </div>
+
+      {/* Transaction Details Modal */}
+      {selectedTransaction && (
+        <TransactionDetails 
+          transaction={selectedTransaction} 
+          onClose={closeTransactionDetails} 
+        />
+      )}
     </div>
   );
 };
