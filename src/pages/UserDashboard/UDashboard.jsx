@@ -229,10 +229,10 @@ const UDashboard = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-6xl mx-auto mt-[-10px]">
         {/* Account Summary Section */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-gray-800">Account Summary</h2>
           <a
             href="#"
@@ -280,18 +280,16 @@ const UDashboard = () => {
                 </div>
               </div>
             ) : accounts.length > 0 ? (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {accounts.map((acc) => (
                   <div
                     key={acc.account_id}
-                    className="p-5 border border-gray-100 rounded-lg hover:border-blue-100 hover:bg-blue-50 transition-all duration-200"
+                    className="py-6 px-10 border-b-4 border-blue-500 bg-white rounded-md hover:bg-blue-50 transition-all"
                   >
-                    <div className="flex justify-between items-center mb-4">
-                      <div>
-                        <span className="text-sm text-gray-500">
-                          Account Type
-                        </span>
-                        <div className="font-semibold text-2xl text-gray-800 flex items-center">
+                    <ul className="space-y-4 text-[17px] text-gray-800">
+                      <li className="flex justify-between">
+                        <span className="text-gray-500">Account Type:</span>
+                        <span className="font-semibold flex items-center">
                           {acc.account_type}
                           {acc.account_type === "Savings" && (
                             <svg
@@ -309,37 +307,30 @@ const UDashboard = () => {
                               />
                             </svg>
                           )}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-sm text-gray-500">
-                          Account Number
                         </span>
-                        <div className="font-semibold text-2xl text-gray-800">
+                      </li>
+                      <li className="flex justify-between">
+                        <span className="text-gray-500">Account Number:</span>
+                        <span className="font-semibold">
                           {acc.account_number}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center mb-4">
-                      <div>
-                        <span className="text-sm text-gray-500">
-                          Available Balance
                         </span>
-                        <div className="font-bold text-2xl text-gray-800">
+                      </li>
+                      <li className="flex justify-between">
+                        <span className="text-gray-500">
+                          Available Balance:
+                        </span>
+                        <span className="font-bold">
                           {typeof acc.balance === "number"
                             ? new Intl.NumberFormat("en-US", {
                                 style: "currency",
                                 currency: acc.currency,
                               }).format(acc.balance)
                             : `${acc.balance} ${acc.currency}`}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-sm text-gray-500">
-                          Created On
                         </span>
-                        <div className="font-semibold text-gray-800">
+                      </li>
+                      <li className="flex justify-between">
+                        <span className="text-gray-500">Created On:</span>
+                        <span className="font-semibold">
                           {new Date(acc.createdAt).toLocaleDateString(
                             undefined,
                             {
@@ -348,13 +339,16 @@ const UDashboard = () => {
                               day: "numeric",
                             }
                           )}
-                        </div>
-                      </div>
-                    </div>
+                        </span>
+                      </li>
+                    </ul>
 
-                    <div className="flex justify-end mt-2">
-                      <button className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
-                        <Link to="/transaction">View transactions</Link>
+                    <div className="flex justify-end mt-3">
+                      <Link
+                        to="/transaction"
+                        className="text-blue-600 hover:text-blue-800 text-base font-medium inline-flex items-center"
+                      >
+                        View transactions
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-4 w-4 ml-1"
@@ -369,7 +363,7 @@ const UDashboard = () => {
                             d="M9 5l7 7-7 7"
                           />
                         </svg>
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 ))}
@@ -409,7 +403,7 @@ const UDashboard = () => {
               </div>
             ) : recentTransactions.length > 0 ? (
               <div className="space-y-4">
-                {recentTransactions.map((transaction) => (
+                {recentTransactions.slice(0,3).map((transaction) => (
                   <div
                     key={transaction.id}
                     className="flex items-center justify-between"

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Bell, Settings, LogOut } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext";
+import Logo from '../../../assets/Logo.png'
 
 const Header = ({ title }) => {
   const { logout, user } = useAuth();
@@ -20,7 +21,16 @@ const Header = ({ title }) => {
 
   return (
     <div className="flex justify-between items-center bg-white px-6 py-3 shadow-sm relative">
-      <h1 className="text-xl font-bold">{title}</h1>
+      <div className="flex items-center">
+        <img className="w-9.5 h-9.5" src={Logo} alt="Logo" />
+        
+      <div className="ml-3 text-2xl font-semibold">
+                <span className="text-red-500">Wealth</span>{" "}
+                <span className="text-blue-900">Coop</span>
+      </div>
+      <h1 className="ml-10 text-xl font-bold">{title}</h1>
+
+      </div>
 
       <div className="flex items-center space-x-4">
         <Settings size={24} className="text-gray-600 cursor-pointer" />
