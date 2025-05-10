@@ -10,8 +10,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-64 h-auto bg-gray-100 p-4">
-      <h2 className="text-xl font-bold text-red-600 mb-6">Wealth Coop</h2>
+    <div className="w-64 h-screen bg-white p-4">
       <nav className="space-y-2">
         {menuItems.map((item) => (
           <NavLink
