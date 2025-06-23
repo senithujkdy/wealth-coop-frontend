@@ -15,6 +15,7 @@ import Settings from './pages/Settings/Setttings';
 import UDashboard from './pages/UserDashboard/UDashboard'; 
 import Transaction from './pages/UserDashboard/Transaction'; 
 import NotFound from './pages/NotFound/NotFound';
+import UserManagement from './components/layout/UserManagement/UserManagement';
 
 import AdminRoutes from './routes/AdminRoutes';
 import CustomerRoutes from './routes/CutomerRoutes';
@@ -40,6 +41,7 @@ function App() {
         <Route element={<AdminRoutes />}>
           <Route path="/admin" element={<AdminDashboard />}>
             <Route index element={<Dashboard />} />
+            <Route path="users" element={<UserManagement />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="statistics" element={<Statistics />} />
             <Route path="predictions" element={<Prediction />} />
