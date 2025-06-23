@@ -1,0 +1,122 @@
+export const businessLoans = [
+  {
+    id: "BL001",
+    name: "Dileepa Arampath",
+    address: "Colombo 4",
+    contact: "0712312312",
+    status: "Approved",
+    amount: 50000,
+    date: "2025-03-20",
+    details: {
+      "Credit policy": "Yes",
+      "Loan Purpose": "Small business",
+      "Interest Rate": 0.1496,
+      "Monthly Installment (Rs)": 194.02,
+      "Log Annual Income": 10.71,
+      "Debt-to-Income Ratio": 4.0,
+      "FICO Score": 667,
+      "Days with Credit Line": 3180,
+      "Revolving Balance (Rs)": 3839,
+      "Revolving Utilization (%)": 76.8,
+      "Inq last": 0,
+      "Delinq 2yrs": 0,
+      "Public rec": 1
+    }
+  },
+  {
+    id: "BL002",
+    name: "Senithu Jayakody",
+    address: "Chilawo",
+    contact: "0712312312",
+    status: "Pending",
+    amount: 75000,
+    date: "2025-04-15",
+    details: {
+      "Credit policy": "Yes",
+      "Loan Purpose": "Credit Card",
+      "Interest Rate": 0.196,
+      "Monthly Installment (Rs)": 24.02,
+      "Log Annual Income": 1.71,
+      "Debt-to-Income Ratio": 4.6,
+      "FICO Score": 66,
+      "Days with Credit Line": 5680,
+      "Revolving Balance (Rs)": 3869,
+      "Revolving Utilization (%)": 43.8,
+      "Inq last": 5,
+      "Delinq 2yrs": 3,
+      "Public rec": 3
+    }
+  },
+  {
+    id: "BL003",
+    name: "Sudesi Samarakoon",
+    address: "Anuradhapura",
+    contact: "0712312312",
+    status: "Denied",
+    amount: 100000,
+    date: "2025-02-10",
+    details: {
+      "Credit policy": "Yes",
+      "Loan Purpose": "small_business",
+      "Interest Rate": 0.1496,
+      "Monthly Installment (Rs)": 194.02,
+      "Log Annual Income": 10.71,
+      "Debt-to-Income Ratio": 4.0,
+      "FICO Score": 667,
+      "Days with Credit Line": 3180,
+      "Revolving Balance (Rs)": 3839,
+      "Revolving Utilization (%)": 76.8,
+      "Inq last": 0,
+      "Delinq 2yrs": 0,
+      "Public rec": 1
+    }
+  },
+  {
+    id: "BL004",
+    name: "Dulani Herath",
+    address: "Kurunegala",
+    contact: "0712312312",
+    status: "Approved",
+    amount: 125000,
+    date: "2025-05-01",
+    details: {
+      "Credit policy": "Yes",
+      "Loan Purpose": "small_business",
+      "Interest Rate": 0.1496,
+      "Monthly Installment (Rs)": 194.02,
+      "Log Annual Income": 10.71,
+      "Debt-to-Income Ratio": 4.0,
+      "FICO Score": 667,
+      "Days with Credit Line": 3180,
+      "Revolving Balance (Rs)": 3839,
+      "Revolving Utilization (%)": 76.8,
+      "Inq last": 0,
+      "Delinq 2yrs": 0,
+      "Public rec": 1
+    }
+  },
+  {
+    id: "BL005",
+    name: "Hemali Dasanayake",
+    address: "Kurunegala",
+    contact: "0712312312",
+    status: "Pending",
+    amount: 80000,
+    date: "2025-04-22",
+    details: {
+      "Credit policy": "Yes",
+      "Loan Purpose": "small_business",
+      "Interest Rate": 0.1496,
+      "Monthly Installment (Rs)": 194.02,
+      "Log Annual Income": 10.71,
+      "Debt-to-Income Ratio": 4.0,
+      "FICO Score": 667,
+      "Days with Credit Line": 3180,
+      "Revolving Balance (Rs)": 3839,
+      "Revolving Utilization (%)": 76.8,
+      "Inq last": 0,
+      "Delinq 2yrs": 0,
+      "Public rec": 1
+    }
+  }
+];
