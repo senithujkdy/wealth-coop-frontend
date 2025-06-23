@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { PREDICT_REPAYMENT_URL } from "../../../requests";
 
 function LoanRepaymentPrediction() {
   const [formData, setFormData] = useState({
@@ -50,7 +51,7 @@ function LoanRepaymentPrediction() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/predict-repayment", 
+        `${PREDICT_REPAYMENT_URL}`, 
         payload
       );
       setPrediction({
