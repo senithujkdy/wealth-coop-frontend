@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { savingsAccounts } from "../AdminDashboard/Services/savingsAccountData"; // Adjust import path as needed
 
 function LoanAmountForecast() {
+  const [userID, setUserID] = useState("");
   const [formData, setFormData] = useState({
     customer_age: "",
     customer_income: "",
@@ -17,7 +19,50 @@ function LoanAmountForecast() {
   });
 
   const [prediction, setPrediction] = useState(null);
+  const [showInvalidIDModal, setShowInvalidIDModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleUserIDChange = (e) => {
+    setUserID(e.target.value);
+  };
+
+  const handleLookup = () => {
+    const account = savingsAccounts.find(account => account.id === userID);
+    if (account) {
+      const details = account.details;
+      setFormData({
+        customer_age: details.Age,
+        customer_income: details["Annual Income (LKR)"].replace(/[^0-9.]/g, ""),
+        home_ownership: details["Home Ownership"],
+        employment_duration: details["Employment Duration (months)"].replace(/\D/g, ""),
+        loan_intent: details["Loan Purpose"].toUpperCase(),
+        loan_grade: details["Loan Grade"],
+        loan_int_rate: details["Interest Rate (%)"].toString(),
+        term_years: details["Loan Term (years)"].replace(/\D/g, ""),
+        historical_default: details["Previous Default"] === "Yes" ? "Y" : "N",
+        cred_hist_length: details["Credit History (years)"].replace(/\D/g, "")
+      });
+    } else {
+      setShowInvalidIDModal(true);
+    }
+  };
+
+  const resetForm = () => {
+    setUserID("");
+    setFormData({
+      customer_age: "",
+      customer_income: "",
+      home_ownership: "",
+      employment_duration: "",
+      loan_intent: "",
+      loan_grade: "",
+      loan_int_rate: "",
+      term_years: "",
+      historical_default: "",
+      cred_hist_length: ""
+    });
+    setPrediction(null);
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -54,16 +99,70 @@ function LoanAmountForecast() {
 
   return (
     <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="flex items-start justify-between gap-x-5 min-h-screen bg-gray-800 py-10">
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="flex items-start justify-between gap-x-5 min-h-screen bg-gray-800 py-10"
+    >
+      {/* Invalid ID Modal */}
+      {showInvalidIDModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-sm">
+            <h3 className="text-xl font-bold mb-4">Invalid User ID</h3>
+            <p>The User ID you entered was not found. Please try again.</p>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setShowInvalidIDModal(false)}
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading Modal */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-sm flex flex-col items-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+            <p className="text-lg font-semibold">Processing Prediction...</p>
+          </div>
+        </div>
+      )}
+
       {/* Left Side Form */}
       <form onSubmit={handleSubmit} className="mx-auto w-[400px]">
         <div className="mb-5">
           <h1 className="text-4xl text-white font-semibold text-center tracking-normal">
             Loan Amount Forecast
           </h1>
+        </div>
+
+        {/* User ID Field */}
+        <div className="mb-5">
+          <label className="block mb-2 text-sm font-medium text-white">
+            User ID:
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              name="userID"
+              value={userID}
+              onChange={handleUserIDChange}
+              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"
+              placeholder="Enter User ID"
+            />
+            <button
+              type="button"
+              onClick={handleLookup}
+              className="bg-gray-400 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg"
+            >
+              Lookup
+            </button>
+          </div>
+          <p className="mt-1 text-[10px] text-gray-200">Enter a valid User ID to auto-fill form</p>
         </div>
 
         {/* Customer Age */}
@@ -130,6 +229,27 @@ function LoanAmountForecast() {
           <p className="mt-1 text-[10px] text-gray-200">Time at current job</p>
         </div>
 
+        {/* Form Buttons */}
+        <div className="flex justify-between mt-9">
+          <button
+            type="button"
+            onClick={resetForm}
+            className="bg-gray-500 hover:bg-gray-700 text-white font-medium py-2 px-8 rounded-full"
+          >
+            Reset
+          </button>
+          <button
+            type="submit"
+            className="bg-blue-400 hover:bg-blue-700 text-white font-medium py-2 px-8 rounded-full"
+            disabled={isLoading}
+          >
+            {isLoading ? "Predicting..." : "Predict Loan Amount"}
+          </button>
+        </div>
+      </form>
+
+      {/* Right Side Form */}
+      <div className="mx-auto w-[400px] mt-14">
         {/* Loan Intent */}
         <div className="mb-5">
           <label className="block mb-2 text-sm font-medium text-white">
@@ -149,20 +269,6 @@ function LoanAmountForecast() {
           </select>
         </div>
 
-        {/* Submit Button */}
-        <div className="flex justify-center mt-9">
-          <button
-            type="submit"
-            className="bg-blue-400 hover:bg-blue-700 text-white font-medium py-2 px-12 rounded-full"
-            disabled={isLoading}
-          >
-            {isLoading ? "Predicting..." : "Predict Loan Amount"}
-          </button>
-        </div>
-      </form>
-
-      {/* Right Side Form */}
-      <form className="mx-auto w-[400px] mt-14">
         {/* Loan Grade */}
         <div className="mb-5">
           <label className="block mb-2 text-sm font-medium text-white">
@@ -244,21 +350,23 @@ function LoanAmountForecast() {
         </div>
 
         {/* Prediction Result */}
-        <div className="flex flex-col items-center mt-10 p-6 bg-gray-700 rounded-lg">
-          <h2 className="text-xl text-white mb-4">Loan Amount Forecast</h2>
-          {prediction !== null ? (
+        <div className="mt-10 p-6 bg-gray-700 rounded-lg">
+          <h2 className="text-2xl text-white mb-4 text-center">Loan Amount Forecast</h2>
+          {prediction !== null && typeof prediction === 'number' ? (
             <div className="text-center">
               <p className="text-3xl font-bold text-blue-400">
                 LKR {prediction.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
               </p>
               <p className="text-gray-300 mt-2">Estimated approved loan amount</p>
             </div>
+          ) : prediction ? (
+            <p className="text-red-500 text-center">{prediction}</p>
           ) : (
-            <p className="text-gray-400">Submit form to get prediction</p>
+            <p className="text-gray-400 text-center">Submit form to get prediction</p>
           )}
         </div>
-      </form>
-      </motion.div>
+      </div>
+    </motion.div>
   );
 }
 
