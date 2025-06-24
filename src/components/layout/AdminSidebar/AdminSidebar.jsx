@@ -1,17 +1,17 @@
-import { Home, BarChart, CreditCard, Settings } from 'lucide-react';
+import { Home, BarChart, CreditCard, Settings, Users } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 const Sidebar = () => {
   const menuItems = [
-    { name: "Dashboard", path: "/admin/dashboard", icon: <Home className="w-5 h-5" /> },
+    { name: "Users", path: "/admin/users", icon: <Users className="w-5 h-5" /> },
+    { name: "Loan Applications", path: "/admin/dashboard", icon: <Home className="w-5 h-5" /> },
     { name: "Statistics", path: "/admin/statistics", icon: <BarChart className="w-5 h-5" /> },
     { name: "Predictions", path: "/admin/predictions", icon: <CreditCard className="w-5 h-5" /> },
     { name: "Services", path: "/admin/services", icon: <Settings className="w-5 h-5" /> },
   ];
 
   return (
-    <div className="w-64 h-auto bg-gray-100 p-4">
-      <h2 className="text-xl font-bold text-red-600 mb-6">Wealth Coop</h2>
+    <div className="w-64 h-screen bg-white p-4">
       <nav className="space-y-2">
         {menuItems.map((item) => (
           <NavLink
