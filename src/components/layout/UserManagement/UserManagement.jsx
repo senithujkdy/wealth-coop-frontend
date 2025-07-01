@@ -19,6 +19,7 @@ const UserManagement = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Fetch users from API
   useEffect(() => {
@@ -243,6 +244,92 @@ const UserManagement = () => {
     </div>
   );
 
+  const EditUserModal = ({ user, onClose, onSave }) => {
+    const [form, setForm] = useState({
+      full_name: user.full_name,
+      email: user.email,
+      phone: user.phone,
+      account_status: user.account_status,
+    });
+
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      setForm({ ...form, [name]: value });
+    };
+
+    const handleSubmit = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/api/users/${user.user_id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(form),
+          }
+        );
+
+        if (!response.ok) throw new Error("Failed to update user");
+
+        const result = await response.json();
+        onSave(result.user); // Updated user
+        onClose();
+        alert("User updated successfully");
+      } catch (err) {
+        console.error("Error updating user:", err);
+        alert("Update failed: " + err.message);
+      }
+    };
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <h3 className="text-lg font-semibold mb-4">Edit User</h3>
+          <div className="space-y-3">
+            {["full_name", "email", "phone"].map((field) => (
+              <div key={field}>
+                <label className="block text-sm text-gray-600 capitalize">
+                  {field.replace("_", " ")}
+                </label>
+                <input
+                  type="text"
+                  name={field}
+                  value={form[field]}
+                  onChange={handleChange}
+                  className="w-full border px-3 py-2 rounded-md"
+                />
+              </div>
+            ))}
+            <div>
+              <label className="block text-sm text-gray-600">
+                Account Status
+              </label>
+              <select
+                name="account_status"
+                value={form.account_status}
+                onChange={handleChange}
+                className="w-full border px-3 py-2 rounded-md"
+              >
+                <option value="Active">Active</option>
+                <option value="Suspended">Suspended</option>
+              </select>
+            </div>
+          </div>
+          <div className="mt-5 flex justify-end space-x-2">
+            <button onClick={onClose} className="px-4 py-2 bg-gray-200 rounded">
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -291,16 +378,6 @@ const UserManagement = () => {
               />
             </div>
           </div>
-
-          {/* <select
-            className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-          >
-            <option value="all">All Roles</option>
-            <option value="customer">Customer</option>
-            <option value="admin">Admin</option>
-          </select> */}
 
           <select
             className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -399,30 +476,14 @@ const UserManagement = () => {
                       </button>
 
                       <button
-                        onClick={() =>
-                          handleStatusChange(
-                            user._id,
-                            user.account_status === "Active"
-                              ? "Inactive"
-                              : "Active"
-                          )
-                        }
-                        className={`p-1 rounded-md transition-colors ${
-                          user.account_status === "Active"
-                            ? "text-red-600 hover:text-red-900 hover:bg-red-50"
-                            : "text-green-600 hover:text-green-900 hover:bg-green-50"
-                        }`}
-                        title={
-                          user.account_status === "Active"
-                            ? "Deactivate User"
-                            : "Activate User"
-                        }
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setShowEditModal(true);
+                        }}
+                        className="text-yellow-600 hover:text-yellow-900 p-1 rounded-md hover:bg-yellow-50 transition-colors"
+                        title="Edit User"
                       >
-                        {user.account_status === "Active" ? (
-                          <UserX className="w-4 h-4" />
-                        ) : (
-                          <UserCheck className="w-4 h-4" />
-                        )}
+                        <Edit className="w-4 h-4" />
                       </button>
 
                       <button
@@ -464,13 +525,29 @@ const UserManagement = () => {
         </div>
       </div>
 
-      {/* User Details Modal */}
+      {/* User Details Modal - THIS WAS MISSING! */}
       {showModal && selectedUser && (
         <UserModal
           user={selectedUser}
           onClose={() => {
             setShowModal(false);
             setSelectedUser(null);
+          }}
+        />
+      )}
+
+      {/* Edit User Modal */}
+      {showEditModal && selectedUser && (
+        <EditUserModal
+          user={selectedUser}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedUser(null);
+          }}
+          onSave={(updatedUser) => {
+            setUsers(users.map((u) =>
+              u.user_id === updatedUser.user_id ? updatedUser : u
+            ));
           }}
         />
       )}
