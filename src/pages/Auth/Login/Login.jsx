@@ -1,9 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, X, AlertCircle, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import AccountCreationPopup from '../../AccountCreattionPopUp/AccountCreationPopup';
 import Logo from '../../../assets/Logo.png'
+
+// Toast Notification Component
+const Toast = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 5000); // Auto close after 5 seconds
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = type === 'error' ? 'bg-red-500' : 'bg-green-500';
+  const Icon = type === 'error' ? AlertCircle : CheckCircle;
+
+  return (
+    <div className={`fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50 flex items-center space-x-3 max-w-md`}>
+      <Icon size={20} />
+      <span className="flex-1">{message}</span>
+      <button
+        onClick={onClose}
+        className="text-white hover:text-gray-200 transition-colors"
+      >
+        <X size={18} />
+      </button>
+    </div>
+  );
+};
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,6 +38,9 @@ const Login = () => {
   const navigate = useNavigate();
   // Initialize popup state to false - will be set to true if user has no accounts
   const [showAccountPopup, setShowAccountPopup] = useState(false);
+  
+  // Toast notification state
+  const [toast, setToast] = useState(null);
 
   const [formData, setFormData] = useState({
     email: '',
@@ -26,6 +56,16 @@ const Login = () => {
       ...prev,
       [e.target.name]: e.target.value
     }));
+  };
+
+  // Function to show toast notifications
+  const showToast = (message, type = 'error') => {
+    setToast({ message, type });
+  };
+
+  // Function to close toast
+  const closeToast = () => {
+    setToast(null);
   };
 
   const handleLogin = async (e) => {
@@ -69,7 +109,8 @@ const Login = () => {
               setShowAccountPopup(true);
             } else {
               console.log('Accounts found, navigating to dashboard');
-              navigate('/');
+              showToast('Login successful! Welcome back.', 'success');
+              setTimeout(() => navigate('/'), 1000); // Small delay to show success message
             }
           } catch (err) {
             console.error('Error checking accounts:', err);
@@ -78,23 +119,23 @@ const Login = () => {
             setShowAccountPopup(true);
           }
         } else if (data.role === 'admin' || data.role === 'staff') {
-          navigate('/admin/dashboard');
-        } else if (data.role === 'admin' || data.role === 'staff') {
-          navigate('/admin/dashboard');
+          showToast('Login successful! Redirecting to admin dashboard.', 'success');
+          setTimeout(() => navigate('/admin/dashboard'), 1000);
         }
       } else {
-        alert(data.error || 'Login failed');
+        showToast(data.error || 'Login failed. Please check your credentials.', 'error');
       }
     } catch (err) {
       console.error(err);
-      alert('Something went wrong');
+      showToast('Something went wrong. Please try again later.', 'error');
     }
   };
   
   // Handle successful account creation
   const handleAccountCreated = () => {
     setShowAccountPopup(false); // First hide the popup
-    navigate('/'); // Then navigate to customer dashboard after account creation
+    showToast('Account created successfully! Welcome to your dashboard.', 'success');
+    setTimeout(() => navigate('/'), 1000); // Navigate after showing success message
   };
   
   // Debug effect to track popup state changes
@@ -104,6 +145,15 @@ const Login = () => {
 
   return (
     <div className="bg-white min-h-screen flex">
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={closeToast}
+        />
+      )}
+      
       {/* Left Side - Form */}
       <div className="w-full lg:w-1/2 p-10 lg:p-16 flex flex-col">
         {/* Logo */}

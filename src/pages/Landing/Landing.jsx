@@ -83,7 +83,7 @@ const Landing = () => {
                 ensures that our customers are at the heart of everything we do,
                 offering personalized solutions to meet your financial needs.
               </p>
-              <button className="bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded-md font-medium">
+              <button onClick={handleSignUp} className="bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded-md font-medium">
                 Join With Us Now
               </button>
             </div>
