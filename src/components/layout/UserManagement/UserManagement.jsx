@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+
 import {
   Search,
   Eye,
@@ -421,6 +423,13 @@ const UserManagement = () => {
           Manage system users and their permissions
         </p>
       </div>
+      <Link 
+        to="/register" 
+        className="ml-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+      >
+        <Plus className="w-4 h-4 mr-2" />
+        Add New User
+      </Link>
 
       {/* Success Message */}
       {showSuccessMessage && (

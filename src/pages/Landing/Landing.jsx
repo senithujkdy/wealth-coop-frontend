@@ -58,17 +58,12 @@ const Landing = () => {
             </div>
             <div className="flex space-x-4">
               <button
-                className="text-gray-700 hover:text-blue-900"
+                className="border border-blue-900 rounded px-4 py-1 text-blue-900 hover:bg-blue-900 hover:text-white"
                 onClick={handleLogIn}
               >
                 Log In
               </button>
-              <button
-                className="border border-blue-900 rounded px-4 py-1 text-blue-900 hover:bg-blue-900 hover:text-white"
-                onClick={handleSignUp}
-              >
-                Sign Up
-              </button>
+              
             </div>
           </div>
 
@@ -83,7 +78,7 @@ const Landing = () => {
                 ensures that our customers are at the heart of everything we do,
                 offering personalized solutions to meet your financial needs.
               </p>
-              <button onClick={handleSignUp} className="bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded-md font-medium">
+              <button onClick={handleLogIn} className="bg-red-500 hover:bg-red-600 text-white py-3 px-6 rounded-md font-medium">
                 Join With Us Now
               </button>
             </div>

@@ -4,7 +4,7 @@ import Security from './Security';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState('Edit Profile');
-  const tabs = ['Edit Profile', 'Preferences', 'Security'];
+  const tabs = ['Edit Profile', 'Security'];
 
   return (
     <div className="bg-gray-50 min-h-screen ">
@@ -33,12 +33,12 @@ const Settings = () => {
           {activeTab === 'Edit Profile' && <EditProfile />}
           {activeTab === 'Security' && (<Security/>)}
 
-          {/* Placeholder for other tabs */}
+          {/* Placeholder for other tabs
           {activeTab === 'Preferences' && (
             <div className="text-center py-8 text-gray-500">
               Preferences 
             </div>
-          )}
+          )} */}
 
         </div>
       </div>

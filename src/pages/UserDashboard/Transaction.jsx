@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight, ArrowUp, ArrowDown, Plus } from 'lucide-react';
-import { useAccount } from '../../context/AccountContext';
-import TransactionPortal from './TransactionPortal';
-import TransactionDetails from '../../components/layout/TransactionDetails/TransactionDetails';
 
-const PAGE_SIZE = 10; // Number of transactions per page
+import React, { useEffect, useState } from 'react';
+import { Send, FileText, Clock, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
+import { useAccount } from '../../context/AccountContext';
+import TransactionDetails from '../../components/layout/TransactionDetails/TransactionDetails';
+import { useNavigate } from 'react-router-dom';
+
+const PAGE_SIZE = 10;
 
 const Transaction = () => {
   const [activeTab, setActiveTab] = useState('All Transactions');
@@ -12,60 +13,95 @@ const Transaction = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const navigate = useNavigate();
 
-  const { accounts, loading: accountsLoading } = useAccount();
+  const { accounts, loading: accountsLoading, refreshAccounts } = useAccount();
   const accountId = accounts?.[0]?.account_id;
   const balance = accounts?.[0]?.balance;
 
-  // Dummy cards data (replace with API if needed)
-  const cards = [
-    {
-      id: 1,
-      balance: `Rs ${balance}.00`,
-      cardHolder: 'Peter Hans',
-      bankName: 'Wealth-COOP',
-      cardType: 'VISA',
-      validThru: '12/29',
-      cardNumber: '3778 **** **** 1234',
-      isActive: true,
-    },
-    // {
-    //   id: 2,
-    //   balance: 'Rs 5,756',
-    //   cardHolder: 'Peter Hans',
-    //   validThru: '12/22',
-    //   cardNumber: '3778 **** **** 1234',
-    //   isActive: false,
-    // },
-  ];
+  // Fetch transactions function
+const fetchTransactions = async () => {
+  if (!accountId) return;
+  
+  try {
+    setLoading(true);
+    // Fetch both withdrawals and deposits in one call
+    const res = await fetch(`http://localhost:3000/api/transactions/account/${accountId}`);
+    const data = await res.json();
+    
+    const formattedTransactions = data.map(tx => {
+      const isDeposit = tx.transaction_type === 'Deposit' || 
+                       (tx.sender_account !== accountId && tx.receiver_account === accountId);
+      
+      return {
+        ...tx,
+        transaction_type: isDeposit ? 'Deposit' : 'Withdrawal',
+        formatted: formatTransaction({
+          ...tx,
+          transaction_type: isDeposit ? 'Deposit' : 'Withdrawal'
+        })
+      };
+    });
+    
+    setTransactions(formattedTransactions);
+  } catch (err) {
+    console.error('Failed to fetch transactions:', err);
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+  }
+};
 
-  // Fetch transactions from API (with polling for real-time updates)
-  useEffect(() => {
-    if (!accountId) return;
-  
-    let isMounted = true;
-    const fetchTransactions = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`http://localhost:3000/api/transactions/account/${accountId}`);
-        const data = await res.json();
-        if (isMounted) setTransactions(data);
-      } catch (e) {
-        console.error('🚨 Failed to fetch transactions:', e);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
+  const formatTransaction = (tx) => {
+    const isDeposit = tx.transaction_type === 'Deposit';
+    const categories = {
+      'Deposit': 'Deposit',
+      'Withdrawal': tx.purpose || 'Payment',
+      'Bill Payment': 'Utility',
+      'Transfer': 'Transfer'
     };
-  
+    
+    return {
+      id: tx._id || tx.transaction_id,
+      name: isDeposit 
+        ? (tx.sender_name || 'Deposit') 
+        : (tx.beneficiary_name || tx.description || 'Payment'),
+      date: new Date(tx.transaction_date).toLocaleDateString('en-US', { 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+      category: categories[tx.transaction_type] || 'Other',
+      cardLast4: tx.account_number ? tx.account_number.slice(-4) : (accounts[0]?.account_number.slice(-4) || '****'),
+      status: tx.status || 'Completed',
+      amount: isDeposit ? tx.amount : -tx.amount,
+      icon: isDeposit ? 
+        <ArrowDown className="text-green-500" size={20} /> : 
+        <ArrowUp className="text-red-500" size={20} />,
+      iconBg: isDeposit ? 'bg-green-100' : 'bg-red-100',
+      type: tx.transaction_type
+    };
+  };
+
+  // Manual refresh function
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([
+      refreshAccounts(),
+      fetchTransactions()
+    ]);
+  };
+
+  // Initial fetch and polling
+  useEffect(() => {
     fetchTransactions();
     const interval = setInterval(fetchTransactions, 10000); // Poll every 10s
-  
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, [accountId]);
-  
+
   // Tabs for filtering
   const tabs = ['All Transactions', 'Income', 'Expense'];
 
@@ -88,8 +124,10 @@ const Transaction = () => {
     tx.transaction_type === 'Deposit'
       ? `+Rs ${tx.amount.toLocaleString()}`
       : `-Rs ${tx.amount.toLocaleString()}`;
+      
   const amountClass = (tx) =>
     tx.transaction_type === 'Deposit' ? 'text-green-500' : 'text-red-500';
+    
   const directionIcon = (tx) =>
     tx.transaction_type === 'Deposit' ? (
       <ArrowDown size={16} className="text-green-500" />
@@ -106,12 +144,69 @@ const Transaction = () => {
   const closeTransactionDetails = () => {
     setSelectedTransaction(null);
   };
-
-  return (
+  
+return (
     <div className="bg-gray-50 min-h-screen p-6">
       <div className="max-w-6xl mx-auto">
-
-        <TransactionPortal/>
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-700 mb-2">Current Balance</h2>
+              <p className="text-3xl font-bold text-gray-900">
+                Rs {balance?.toLocaleString() || '0'}.00
+              </p>
+            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Refresh balance"
+            >
+              <RefreshCw 
+                size={20} 
+                className={`text-gray-500 ${refreshing ? 'animate-spin' : ''}`} 
+              />
+            </button>
+          </div>
+          
+          {/* Transfer Options */}
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button 
+              onClick={() => navigate('/transaction/transactionportal')}
+              className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg transition-colors flex flex-col items-center"
+            >
+              <div className="flex items-center justify-center w-12 h-12 bg-blue-500/20 rounded-full mb-2">
+                <Send size={24} className="text-white" />
+              </div>
+              <span className="font-medium text-2xl">One-Time Transfer</span>
+              <span className="text-sm text-blue-100 mt-1">Send money instantly</span>
+            </button>
+            
+            <button 
+              onClick={() => navigate('/transaction/bill-payment')}
+              className="bg-green-600 hover:bg-green-700 text-white p-4 rounded-lg transition-colors flex flex-col items-center"
+            >
+              <div className="flex items-center justify-center w-12 h-12 bg-green-500/20 rounded-full mb-2">
+                <FileText size={24} className="text-white" />
+              </div>
+              <span className="font-medium text-2xl">Bill Payment</span>
+              <span className="text-sm text-green-100 mt-1">
+                Pay utilities, save billers, and schedule payments
+              </span>
+            </button>
+            
+            <button 
+              onClick={() => navigate('/transaction/recurring')}
+              className="bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-lg transition-colors flex flex-col items-center"
+            >
+              <div className="flex items-center justify-center w-12 h-12 bg-purple-500/20 rounded-full mb-2">
+                <Clock size={24} className="text-white" />
+              </div>
+              <span className="font-medium text-2xl">Recurring Transfer</span>
+              <span className="text-sm text-purple-100 mt-1">Set up automatic payments</span>
+            </button>
+          </div>
+        </div>
 
         {/* Transactions Section */}
         <div className="mb-6">
