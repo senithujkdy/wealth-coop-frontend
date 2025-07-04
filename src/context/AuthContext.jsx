@@ -4,26 +4,32 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
   });
-  console.log('📂 Initial auth state loaded from localStorage:', user);
 
+  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
+
+  useEffect(() => {
+    console.log('📂 Auth state loaded:', { user, token });
+  }, [user, token]);
 
   const login = (userData) => {
     localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('token', userData.token); // ✅ Save token
     setUser(userData);
-    console.log('Saving user data to context:', userData);
+    setToken(userData.token);
   };
 
   const logout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('token'); // ✅ Remove token
     setUser(null);
-    console.log('Logging out user');
+    setToken(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoggedIn: !!user }}>
+    <AuthContext.Provider value={{ user, token, login, logout, isLoggedIn: !!user }}>
       {children}
     </AuthContext.Provider>
   );
