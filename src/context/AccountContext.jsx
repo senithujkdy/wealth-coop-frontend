@@ -4,29 +4,32 @@ import { useAuth } from './AuthContext';
 const AccountContext = createContext();
 
 export const AccountProvider = ({ children }) => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch accounts when user logs in
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      if (!user) return;
+useEffect(() => {
+  const fetchAccounts = async () => {
+    if (!user || !token) return;
 
-      try {
-        const res = await fetch(`http://localhost:3000/api/accounts/user/${user.user_id}`);
-        const data = await res.json();
-        console.log('📦 Accounts Data from Context:', data);
-        setAccounts(data.accounts || []);
-      } catch (error) {
-        console.error('🚨 AccountContext: Failed to fetch accounts:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      const res = await fetch(`http://localhost:3000/api/accounts/user/${user.user_id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      setAccounts(data.accounts || []);
+    } catch (error) {
+      console.error('Failed to fetch accounts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchAccounts();
-  }, [user]);
+  fetchAccounts();
+}, [user, token]);
 
   return (
     <AccountContext.Provider value={{ accounts, loading }}>

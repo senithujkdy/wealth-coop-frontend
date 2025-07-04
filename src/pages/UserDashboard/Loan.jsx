@@ -8,6 +8,9 @@ import {
   Calendar,
   Percent,
   CreditCard,
+  AlertCircle,
+  CheckCircle,
+  X,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useAccount } from "../../context/AccountContext";
@@ -18,10 +21,12 @@ const Loan = () => {
 const [showRepayModal, setShowRepayModal] = useState(false);
 const [repayLoan, setRepayLoan] = useState(null);
 const [repayAmount, setRepayAmount] = useState("");
+const [repayStatus, setRepayStatus] = useState({ type: '', message: '' });
 
 const handleRepay = (loan) => {
   setRepayLoan(loan);
   setRepayAmount("");
+  setRepayStatus({ type: '', message: '' });
   setShowRepayModal(true);
 };
 
@@ -40,16 +45,24 @@ const handleRepay = (loan) => {
   const { accounts } = useAccount();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
-
+  const [formError, setFormError] = useState('');
+  const [notification, setNotification] = useState({ type: '', message: '', show: false });
 
   const account_id = accounts && accounts[0]?.account_id;
   const user_id = accounts && accounts[0]?.user_id;
-
 
   // State for active loans fetched from API
   const [activeLoans, setActiveLoans] = useState([]);
   const [loadingLoans, setLoadingLoans] = useState(true);
   const [errorLoans, setErrorLoans] = useState(null);
+
+  // Notification system
+  const showNotification = (type, message) => {
+    setNotification({ type, message, show: true });
+    setTimeout(() => {
+      setNotification({ type: '', message: '', show: false });
+    }, 5000);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -57,12 +70,16 @@ const handleRepay = (loan) => {
       ...prev,
       [name]: value,
     }));
+    // Clear form error when user starts typing
+    if (formError) setFormError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
+    
     if (!user || accounts.length === 0) {
-      alert("User or account info missing.");
+      setFormError("User or account information is missing. Please ensure you're logged in and have an active account.");
       return;
     }
 
@@ -85,13 +102,14 @@ const handleRepay = (loan) => {
       const data = await res.json();
       if (res.ok) {
         setFormSubmitted(true);
+        showNotification('success', 'Loan application submitted successfully!');
         console.log("✅ Loan submitted:", data);
       } else {
-        alert(data.error || "Loan application failed");
+        setFormError(data.error || "Loan application failed. Please check your information and try again.");
       }
     } catch (err) {
       console.error("🚨 Loan submission error:", err);
-      alert("An error occurred.");
+      setFormError("Network error occurred. Please check your connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -125,45 +143,55 @@ const handleRepay = (loan) => {
     },
   ];
 
-  //   {
-  //     id: "01",
-  //     amount: "$100,000",
-  //     leftToRepay: "$40,500",
-  //     duration: "8 Months",
-  //     interestRate: "12%",
-  //     installment: "$2,000 / month",
-  //   },
-
-
   // Calculate totals
   const totalAmount = "$1,250,000";
   const totalLeftToRepay = "$750,000";
   const totalInstallment = "$50,000 / month";
 
-    // Fetch active loans when account_id is available
-    useEffect(() => {
-      if (!account_id) return;
-      setLoadingLoans(true);
-      setErrorLoans(null);
-  
-      fetch(`http://localhost:3000/api/approvals/approved/search?account_id=${account_id}`)
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch loans");
-          return res.json();
-        })
-        .then((data) => {
-          setActiveLoans(data); // Adjust if your API wraps data in a property
-          setLoadingLoans(false);
-        })
-        .catch((err) => {
-          setErrorLoans(err.message);
-          setLoadingLoans(false);
-        });
-    }, [account_id]);
+  // Fetch active loans when account_id is available
+  useEffect(() => {
+    if (!account_id) return;
+    setLoadingLoans(true);
+    setErrorLoans(null);
+
+    fetch(`http://localhost:3000/api/approvals/approved/search?account_id=${account_id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch loans");
+        return res.json();
+      })
+      .then((data) => {
+        setActiveLoans(data);
+        setLoadingLoans(false);
+      })
+      .catch((err) => {
+        setErrorLoans(err.message);
+        setLoadingLoans(false);
+      });
+  }, [account_id, formSubmitted]); // Refresh loans after successful submission
 
   return (
     <div className="bg-gray-50 min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Notification Toast */}
+        {notification.show && (
+          <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg flex items-center space-x-2 ${
+            notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+          }`}>
+            {notification.type === 'success' ? (
+              <CheckCircle size={20} />
+            ) : (
+              <AlertCircle size={20} />
+            )}
+            <span>{notification.message}</span>
+            <button
+              onClick={() => setNotification({ ...notification, show: false })}
+              className="ml-2 hover:bg-white hover:bg-opacity-20 rounded-full p-1"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+
         {/* Loan Category Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {loanCategories.map((category, index) => (
@@ -196,20 +224,7 @@ const handleRepay = (loan) => {
             <div className="p-6">
               <div className="bg-green-50 text-green-800 rounded-lg p-4 mb-4">
                 <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
+                  <CheckCircle className="w-5 h-5 mr-2" />
                   <span className="font-medium">
                     Loan application submitted successfully!
                   </span>
@@ -219,92 +234,128 @@ const handleRepay = (loan) => {
                 </p>
               </div>
               <button
-                onClick={() => setFormSubmitted(false)}
+                onClick={() => {
+                  setFormSubmitted(false);
+                  setLoanForm({
+                    loan_amount: "",
+                    interest_rate: "",
+                    credit_score: "",
+                    income: "",
+                    loan_limit: "",
+                  });
+                }}
                 className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
               >
                 Apply for Another Loan
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4 mx-6">
-              <div>
-                <label className="block text-gray-700">Loan Amount</label>
-                <input
-                  type="number"
-                  name="loan_amount"
-                  value={loanForm.loan_amount}
-                  onChange={handleChange}
-                  className="w-full mt-1 p-2 border rounded"
-                  placeholder="Ex: 500000"
-                  required
-                />
-              </div>
+            <div className="p-6">
+              {/* Form Error Display */}
+              {formError && (
+                <div className="bg-red-50 text-red-800 rounded-lg p-4 mb-4">
+                  <div className="flex items-start">
+                    <AlertCircle className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <span className="font-medium">Application Error</span>
+                      <p className="mt-1">{formError}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-              <div>
-                <label className="block text-gray-700">Interest Rate (%)</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  name="interest_rate"
-                  value={loanForm.interest_rate}
-                  onChange={handleChange}
-                  className="w-full mt-1 p-2 border rounded"
-                  placeholder="Ex: 12.5"
-                  required
-                />
-              </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Loan Amount</label>
+                  <input
+                    type="number"
+                    name="loan_amount"
+                    value={loanForm.loan_amount}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Ex: 500000"
+                    required
+                  />
+                </div>
 
-              <div>
-                <label className="block text-gray-700">Credit Score</label>
-                <input
-                  type="number"
-                  name="credit_score"
-                  value={loanForm.credit_score}
-                  onChange={handleChange}
-                  className="w-full mt-1 p-2 border rounded"
-                  placeholder="Ex: 720"
-                  required
-                />
-              </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Interest Rate (%)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    name="interest_rate"
+                    value={loanForm.interest_rate}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Ex: 12.5"
+                    required
+                  />
+                </div>
 
-              <div>
-                <label className="block text-gray-700">Monthly Income</label>
-                <input
-                  type="number"
-                  name="income"
-                  value={loanForm.income}
-                  onChange={handleChange}
-                  className="w-full mt-1 p-2 border rounded"
-                  placeholder="Ex: 100000"
-                  required
-                />
-              </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Credit Score</label>
+                  <input
+                    type="number"
+                    name="credit_score"
+                    value={loanForm.credit_score}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Ex: 720"
+                    required
+                  />
+                </div>
 
-              <div>
-                <label className="block text-gray-700">
-                  Loan Limit (e.g., CF)
-                </label>
-                <input
-                  type="text"
-                  name="loan_limit"
-                  value={loanForm.loan_limit}
-                  onChange={handleChange}
-                  className="w-full mt-1 p-2 border rounded"
-                  placeholder="Ex: CF"
-                  required
-                />
-              </div>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">Monthly Income</label>
+                  <input
+                    type="number"
+                    name="income"
+                    value={loanForm.income}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Ex: 100000"
+                    required
+                  />
+                </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={`w-full p-3 mb-4 rounded text-white font-medium ${
-                  isSubmitting ? "bg-blue-300" : "bg-blue-600 hover:bg-blue-700"
-                }`}
-              >
-                {isSubmitting ? "Submitting..." : "Submit Application"}
-              </button>
-            </form>
+                <div>
+                  <label className="block text-gray-700 font-medium mb-1">
+                    Loan Limit (e.g., CF)
+                  </label>
+                  <input
+                    type="text"
+                    name="loan_limit"
+                    value={loanForm.loan_limit}
+                    onChange={handleChange}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Ex: CF"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`w-full p-3 rounded-lg text-white font-medium transition-colors ${
+                    isSubmitting 
+                      ? "bg-blue-300 cursor-not-allowed" 
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Submitting...
+                    </span>
+                  ) : (
+                    "Submit Application"
+                  )}
+                </button>
+              </form>
+            </div>
           )}
         </div>
 
@@ -313,64 +364,99 @@ const handleRepay = (loan) => {
           activeLoans={activeLoans}
           onRepay={handleRepay} 
         />
+
+        {/* Repay Modal */}
         {showRepayModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md">
-      <h2 className="text-lg font-semibold mb-2">Repay Loan</h2>
-      <p className="text-gray-600 mb-4">
-        Enter amount to repay for <strong>Loan ID: {repayLoan?.loan_id}</strong>
-      </p>
-      <input
-        type="number"
-        className="w-full border p-2 rounded mb-4"
-        placeholder="Enter amount"
-        value={repayAmount}
-        onChange={(e) => setRepayAmount(e.target.value)}
-      />
-      <div className="flex justify-end space-x-2">
-        <button
-          onClick={() => setShowRepayModal(false)}
-          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={async () => {
-            if (!repayAmount || isNaN(repayAmount) || repayAmount <= 0) {
-              alert("Please enter a valid amount.");
-              return;
-            }
-            try {
-              const res = await fetch("http://localhost:3000/api/repayments", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  user_id,
-                  loan_id: repayLoan.loan_id,
-                  account_id: repayLoan.account_id,
-                  amount_paid: parseFloat(repayAmount),
-                }),
-              });
-              const data = await res.json();
-              if (res.ok) {
-                // alert(`Repayment successful: ${data.message}`);
-                setShowRepayModal(false);
-              } else {
-                alert(data.error || "Repayment failed.");
-              }
-            } catch (err) {
-              console.error(err);
-              alert("An error occurred during repayment.");
-            }
-          }}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Confirm Repayment
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+          <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md">
+              <h2 className="text-lg font-semibold mb-2">Repay Loan</h2>
+              <p className="text-gray-600 mb-4">
+                Enter amount to repay for <strong>Loan ID: {repayLoan?.loan_id}</strong>
+              </p>
+              
+              {/* Repay Status Display */}
+              {repayStatus.message && (
+                <div className={`rounded-lg p-3 mb-4 ${
+                  repayStatus.type === 'success' 
+                    ? 'bg-green-50 text-green-800' 
+                    : 'bg-red-50 text-red-800'
+                }`}>
+                  <div className="flex items-center">
+                    {repayStatus.type === 'success' ? (
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                    )}
+                    <span className="text-sm">{repayStatus.message}</span>
+                  </div>
+                </div>
+              )}
+
+              <input
+                type="number"
+                className="w-full border border-gray-300 p-3 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter amount"
+                value={repayAmount}
+                onChange={(e) => {
+                  setRepayAmount(e.target.value);
+                  setRepayStatus({ type: '', message: '' });
+                }}
+              />
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => {
+                    setShowRepayModal(false);
+                    setRepayStatus({ type: '', message: '' });
+                  }}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!repayAmount || isNaN(repayAmount) || repayAmount <= 0) {
+                      setRepayStatus({ type: 'error', message: 'Please enter a valid amount.' });
+                      return;
+                    }
+                    
+                    setRepayStatus({ type: '', message: '' });
+                    try {
+                      const res = await fetch("http://localhost:3000/api/repayments", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          user_id,
+                          loan_id: repayLoan.loan_id,
+                          account_id: repayLoan.account_id,
+                          amount_paid: parseFloat(repayAmount),
+                        }),
+                      });
+                      const data = await res.json();
+                      if (res.ok) {
+                        setRepayStatus({ type: 'success', message: 'Repayment processed successfully!' });
+                        showNotification('success', `Repayment of $${repayAmount} processed successfully`);
+                        setTimeout(() => {
+                          setShowRepayModal(false);
+                          setRepayStatus({ type: '', message: '' });
+                          // Refresh loans data
+                          window.location.reload();
+                        }, 2000);
+                      } else {
+                        setRepayStatus({ type: 'error', message: data.error || 'Repayment failed. Please try again.' });
+                      }
+                    } catch (err) {
+                      console.error(err);
+                      setRepayStatus({ type: 'error', message: 'Network error occurred. Please check your connection and try again.' });
+                    }
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Confirm Repayment
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
