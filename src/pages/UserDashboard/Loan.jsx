@@ -22,6 +22,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { useAccount } from "../../context/AccountContext";
 import ActiveLoanTable from "./ActiveLoansTable";
+import LoanCalculator from "./LoanCalculator";
 
 const Loan = () => {
   
@@ -29,6 +30,7 @@ const [showRepayModal, setShowRepayModal] = useState(false);
 const [repayLoan, setRepayLoan] = useState(null);
 const [repayAmount, setRepayAmount] = useState("");
 const [repayStatus, setRepayStatus] = useState({ type: '', message: '' });
+const [activeTab, setActiveTab] = useState('apply'); // 'apply' or 'calculate'
 
 const handleRepay = (loan) => {
   setRepayLoan(loan);
@@ -640,6 +642,7 @@ const handleRepay = (loan) => {
               <div className="text-amber-700 space-y-2">
                 <p>• This is a <strong>Personal Loan</strong> application.</p>
                 <p>• You can apply for a <strong>maximum loan amount of LKR 500,000</strong>.</p>
+                <p>• Calculate your eligible loan amount using <strong>Loan Calculator</strong> provided in this site.</p>
                 <p>• In order to receive the loan amount you are applying for, your account balance <strong>must be at least 1/12 of the requested loan amount</strong>.</p>
                 <p>• Additionally, you are required to <strong>maintain a minimum balance of LKR 2,000</strong> in your account at all times.</p>
               </div>
@@ -655,8 +658,10 @@ const handleRepay = (loan) => {
           </div>
         </div>
 
+        <LoanCalculator/>
+
         {/* Multi-Step Loan Application Form */}
-        <div className="bg-white rounded-xl shadow-sm mb-8 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm mb-8 mt-8 overflow-hidden">
           <div className="p-6 border-b border-gray-100">
             <h2 className="text-xl font-bold text-gray-800">
               Apply for a Loan
