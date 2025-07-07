@@ -1,4 +1,5 @@
 const ActiveLoanTable = ({ activeLoans , onRepay}) => {
+  const approvedLoans = activeLoans.filter((loan) => loan.status === "approved");
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
       <h2 className="text-xl font-bold text-gray-800 p-6 pb-4">Active Loans Overview</h2>
@@ -21,7 +22,7 @@ const ActiveLoanTable = ({ activeLoans , onRepay}) => {
             </tr>
           </thead>
           <tbody>
-            {activeLoans.map((loan, index) => (
+            {approvedLoans.map((loan, index) => (
               <tr key={loan._id} className="border-b border-gray-100">
                 <td className="px-6 py-4">{index + 1}</td>
                 <td className="px-6 py-4">{loan.loan_id}</td>
@@ -31,7 +32,11 @@ const ActiveLoanTable = ({ activeLoans , onRepay}) => {
                 <td className="px-6 py-4">{loan.interest_rate}</td>
                 <td className="px-6 py-4">{loan.credit_score}</td>
                 <td className="px-6 py-4">{loan.income}</td>
-                <td className="px-6 py-4 capitalize">{loan.status}</td>
+                <td className="px-6 py-4 capitalize">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    {loan.status}
+                  </span>
+                </td>
                 <td className="px-6 py-4">
                   <button
                     className="rounded-full px-6 py-1 border border-blue-500 bg-blue-500 text-white hover:bg-blue-600 transition"

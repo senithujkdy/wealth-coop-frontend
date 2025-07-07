@@ -24,13 +24,15 @@ import { useAccount } from "../../context/AccountContext";
 import ActiveLoanTable from "./ActiveLoansTable";
 import LoanCalculator from "./LoanCalculator";
 import ImportantNotice from "../../components/ImportantNotice/ImportantNotice";
+import SubmittedLoanTable from "./SubmittedLoanTable";
 
 const Loan = () => {
   const [showRepayModal, setShowRepayModal] = useState(false);
   const [repayLoan, setRepayLoan] = useState(null);
   const [repayAmount, setRepayAmount] = useState("");
   const [repayStatus, setRepayStatus] = useState({ type: "", message: "" });
-  const [activeTab, setActiveTab] = useState("apply"); // 'apply' or 'calculate'
+  const [activeTab, setActiveTab] = useState("active"); // 'apply' or 'calculate'
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleRepay = (loan) => {
     setRepayLoan(loan);
@@ -62,6 +64,10 @@ const Loan = () => {
     sector: "",
     employment_type: "",
     account_balance: "",
+    gross_salary: "",
+    net_salary: "",
+    other_income: "",
+    deductions: "",
   });
 
   // State for form submission
@@ -121,6 +127,46 @@ const Loan = () => {
     { number: 3, title: "Financial Details", icon: Building },
     { number: 4, title: "Review & Submit", icon: CheckCircle },
   ];
+
+  const sampleSubmittedApplications = [
+    {
+      _id: "3",
+      loan_id: "LN003",
+      loan_amount: 75000,
+      interest_rate: 9.1,
+      credit_score: 720,
+      income: 85000,
+      status: "submitted",
+      prediction_time: new Date(),
+      application_date: new Date("2024-12-01"),
+    },
+    {
+      _id: "4",
+      loan_id: "LN004",
+      loan_amount: 30000,
+      interest_rate: 10.5,
+      credit_score: 620,
+      income: 45000,
+      status: "rejected",
+      prediction_time: new Date(),
+      application_date: new Date("2024-11-28"),
+      rejection_reason: "Insufficient credit score",
+    },
+    {
+      _id: "5",
+      loan_id: "LN005",
+      loan_amount: 100000,
+      interest_rate: 8.8,
+      credit_score: 780,
+      income: 120000,
+      status: "submitted",
+      prediction_time: new Date(),
+      application_date: new Date("2024-12-05"),
+    },
+  ];
+  const submittedApplications = activeLoans.filter(
+    (loan) => loan.status === "pending" || loan.status === "rejected"
+  );
 
   // Notification system
   const showNotification = (type, message) => {
@@ -200,6 +246,9 @@ const Loan = () => {
             errors.account_balance = `Account balance must be at least LKR ${minBalance.toLocaleString()} (1/12 of loan amount)`;
           }
         }
+        if (!loanForm.gross_salary)
+          errors.gross_salary = "Gross salary is required";
+        if (!loanForm.net_salary) errors.net_salary = "Net salary is required";
         break;
 
       default:
@@ -316,14 +365,13 @@ const Loan = () => {
     setLoadingLoans(true);
     setErrorLoans(null);
 
-    fetch(
-      `http://localhost:3000/api/approvals/approved/search?account_id=${account_id}`
-    )
+    fetch(`http://localhost:3000/api/loans/all/${account_id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch loans");
         return res.json();
       })
       .then((data) => {
+        console.log("Fetched loans with remarks:", data); // ✅ Confirm here
         setActiveLoans(data);
         setLoadingLoans(false);
       })
@@ -462,7 +510,7 @@ const Loan = () => {
                   name="interest_rate"
                   value={loanForm.interest_rate}
                   onChange={handleChange}
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  className={`w-full p-3 border rounded-lg bg-gray-100 cursor-not-allowed ${
                     stepErrors.interest_rate
                       ? "border-red-500"
                       : "border-gray-300"
@@ -630,6 +678,107 @@ const Loan = () => {
               )}
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Gross Salary:{" "}
+                  <span className="block text-sm font-normal text-gray-500">
+                    (in Rupees)
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  name="gross_salary"
+                  value={loanForm.gross_salary}
+                  onChange={handleChange}
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    stepErrors.gross_salary
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  placeholder="Enter the gross salary"
+                />
+                {stepErrors.gross_salary && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {stepErrors.gross_salary}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Net Salary:{" "}
+                  <span className="block text-sm font-normal text-gray-500">
+                    (in Rupees)
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  name="net_salary"
+                  value={loanForm.net_salary}
+                  onChange={handleChange}
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    stepErrors.net_salary ? "border-red-500" : "border-gray-300"
+                  }`}
+                  placeholder="Enter the net salary"
+                />
+                {stepErrors.net_salary && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {stepErrors.net_salary}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Other Income:{" "}
+                  <span className="block text-sm font-normal text-gray-500">
+                    (in Rupees)
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  name="other_income"
+                  value={loanForm.other_income}
+                  onChange={handleChange}
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    stepErrors.other_income
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                  placeholder="Enter other income"
+                />
+                {stepErrors.other_income && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {stepErrors.other_income}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Deductions:{" "}
+                  <span className="block text-sm font-normal text-gray-500">
+                    (in Rupees)
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  name="deductions"
+                  value={loanForm.deductions}
+                  onChange={handleChange}
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    stepErrors.deductions ? "border-red-500" : "border-gray-300"
+                  }`}
+                  placeholder="Enter deduction"
+                />
+                {stepErrors.deductions && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {stepErrors.deductions}
+                  </p>
+                )}
+              </div>
+            </div>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-start">
                 <AlertCircle className="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
@@ -723,6 +872,26 @@ const Loan = () => {
                       <span className="font-medium">Account Balance:</span> LKR{" "}
                       {Number(loanForm.account_balance).toLocaleString()}
                     </p>
+                    <p>
+                      <span className="font-medium">Gross Salary:</span> LKR{" "}
+                      {Number(loanForm.gross_salary).toLocaleString()}
+                    </p>
+                    <p>
+                      <span className="font-medium">Net Salary:</span> LKR{" "}
+                      {Number(loanForm.net_salary).toLocaleString()}
+                    </p>
+                    {loanForm.other_income ? (
+                      <p>
+                        <span className="font-medium">Other Income:</span> LKR{" "}
+                        {Number(loanForm.other_income).toLocaleString()}
+                      </p>
+                    ) : null}
+                    {loanForm.deductions ? (
+                      <p>
+                        <span className="font-medium">Deductions:</span> LKR{" "}
+                        {Number(loanForm.deductions).toLocaleString()}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -1015,8 +1184,42 @@ const Loan = () => {
           )}
         </div>
 
-        {/* Active Loans Table */}
-        <ActiveLoanTable activeLoans={activeLoans} onRepay={handleRepay} />
+        {/* Tab Navigation */}
+        <div className="mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab("active")}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "active"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                Active Loans
+              </button>
+              <button
+                onClick={() => setActiveTab("submitted")}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "submitted"
+                    ? "border-blue-500 text-blue-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                Submitted Applications
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === "active" && (
+          <ActiveLoanTable activeLoans={activeLoans} onRepay={handleRepay} />
+        )}
+
+        {activeTab === "submitted" && (
+          <SubmittedLoanTable submittedApplications={submittedApplications} />
+        )}
 
         {/* Repay Modal */}
         {showRepayModal && (
