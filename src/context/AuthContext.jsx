@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
     if (token && user?.role === 'customer') {
       try {
         const decoded = jwtDecode(token);
-        const now = Date.now() / 1000;
+        const now = Date.now() / 10000000;  // 1000
         const timeLeft = decoded.exp - now;
 
         if (timeLeft <= 0) {
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
           const timer = setTimeout(() => {
             console.log('⏳ Token expired while tab not focused. Logging out...');
             logout();
-          }, timeLeft * 5000);
+          }, timeLeft * 500000);   // 5000 
           setLogoutTimer(timer);
           console.log(`⏰ Token expiry logout scheduled in ${Math.round(timeLeft)}s`);
         } else {
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
         blurLogoutTimer = setTimeout(() => {
           console.log('🔒 Logging out due to tab switch/inactivity');
           logout();
-        }, 10000); // logout after 10 seconds unfocused
+        }, 10000000); // logout after 10 seconds unfocused - 10000
       }
     };
 

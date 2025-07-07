@@ -25,6 +25,7 @@ import ActiveLoanTable from "./ActiveLoansTable";
 import LoanCalculator from "./LoanCalculator";
 import ImportantNotice from "../../components/ImportantNotice/ImportantNotice";
 import SubmittedLoanTable from "./SubmittedLoanTable";
+import LoanTermsPopUp from "../../components/LoanTermsPopUp/LoanTermsPopUp";
 
 const Loan = () => {
   const [showRepayModal, setShowRepayModal] = useState(false);
@@ -341,6 +342,18 @@ const Loan = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleModalSubmit = async () => {
+    setIsModalOpen(false); // Close the modal first
+
+    // Create a fake event object since your existing handleSubmit expects one
+    const fakeEvent = {
+      preventDefault: () => {},
+    };
+
+    // Call your existing handleSubmit function
+    await handleSubmit(fakeEvent);
   };
 
   // Loan category data
@@ -1139,7 +1152,7 @@ const Loan = () => {
                   </button>
                 ) : (
                   <button
-                    onClick={handleSubmit}
+                    onClick={() => setIsModalOpen(true)}
                     disabled={isSubmitting}
                     className={`flex items-center px-8 py-3 rounded-lg font-medium transition-colors ${
                       isSubmitting
@@ -1179,6 +1192,12 @@ const Loan = () => {
                     )}
                   </button>
                 )}
+                <LoanTermsPopUp
+                  isOpen={isModalOpen}
+                  onClose={() => setIsModalOpen(false)}
+                  onSubmit={handleModalSubmit}
+                  loanForm={loanForm}
+                />
               </div>
             </div>
           )}
