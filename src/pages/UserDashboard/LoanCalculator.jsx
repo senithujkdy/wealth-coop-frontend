@@ -197,11 +197,12 @@ const LoanCalculator = () => {
                   name="interestRate"
                   value={calculatorData.interestRate}
                   onChange={handleInputChange}
-                  className={`w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  className={`w-full pl-10 pr-3 py-3 border rounded-lg bg-gray-100 cursor-not-allowed ${
                     errors.interestRate ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Interest rate"
                   step="0.1"
+                  readOnly
                 />
               </div>
               {errors.interestRate && (
@@ -308,7 +309,7 @@ const LoanCalculator = () => {
                   <div className="text-blue-700 text-sm mt-1 space-y-1">
                     <p>• Government/Semi-Government: <strong>17.00% per annum</strong></p>
                     <p>• Private Sector (≤24 months): <strong>17.50% per annum</strong></p>
-                    <p>• Private Sector (>24 months): <strong>18.50% per annum</strong></p>
+                    <p>• Private Sector (&gt;24 months): <strong>18.50% per annum</strong></p>
                   </div>
                 </div>
               </div>

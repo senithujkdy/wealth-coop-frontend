@@ -23,26 +23,26 @@ import { useAuth } from "../../context/AuthContext";
 import { useAccount } from "../../context/AccountContext";
 import ActiveLoanTable from "./ActiveLoansTable";
 import LoanCalculator from "./LoanCalculator";
+import ImportantNotice from "../../components/ImportantNotice/ImportantNotice";
 
 const Loan = () => {
-  
-const [showRepayModal, setShowRepayModal] = useState(false);
-const [repayLoan, setRepayLoan] = useState(null);
-const [repayAmount, setRepayAmount] = useState("");
-const [repayStatus, setRepayStatus] = useState({ type: '', message: '' });
-const [activeTab, setActiveTab] = useState('apply'); // 'apply' or 'calculate'
+  const [showRepayModal, setShowRepayModal] = useState(false);
+  const [repayLoan, setRepayLoan] = useState(null);
+  const [repayAmount, setRepayAmount] = useState("");
+  const [repayStatus, setRepayStatus] = useState({ type: "", message: "" });
+  const [activeTab, setActiveTab] = useState("apply"); // 'apply' or 'calculate'
 
-const handleRepay = (loan) => {
-  setRepayLoan(loan);
-  setRepayAmount("");
-  setRepayStatus({ type: '', message: '' });
-  setShowRepayModal(true);
-};
+  const handleRepay = (loan) => {
+    setRepayLoan(loan);
+    setRepayAmount("");
+    setRepayStatus({ type: "", message: "" });
+    setShowRepayModal(true);
+  };
 
   // Multi-step form state
   const [currentStep, setCurrentStep] = useState(1);
   const [stepErrors, setStepErrors] = useState({});
-  
+
   // Form state for loan application (enhanced with new fields)
   const [loanForm, setLoanForm] = useState({
     // Step 1: Personal Details
@@ -50,14 +50,14 @@ const handleRepay = (loan) => {
     nic: "",
     date_of_birth: "",
     address: "",
-    
+
     // Step 2: Loan Details
     loan_amount: "",
     interest_rate: "",
     credit_score: "",
     income: "",
-    loan_limit: "",
-    
+    loan_type: "",
+
     // Step 3: Financial Details
     sector: "",
     employment_type: "",
@@ -69,8 +69,12 @@ const handleRepay = (loan) => {
   const { accounts } = useAccount();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const [formError, setFormError] = useState('');
-  const [notification, setNotification] = useState({ type: '', message: '', show: false });
+  const [formError, setFormError] = useState("");
+  const [notification, setNotification] = useState({
+    type: "",
+    message: "",
+    show: false,
+  });
 
   const account_id = accounts && accounts[0]?.account_id;
   const user_id = accounts && accounts[0]?.user_id;
@@ -83,14 +87,14 @@ const handleRepay = (loan) => {
   // Prefill form data from context
   useEffect(() => {
     if (user) {
-      setLoanForm(prev => ({
+      setLoanForm((prev) => ({
         ...prev,
         full_name: user.full_name || user.name || "",
       }));
     }
-    
+
     if (accounts && accounts[0]) {
-      setLoanForm(prev => ({
+      setLoanForm((prev) => ({
         ...prev,
         account_balance: accounts[0].balance || "",
       }));
@@ -122,7 +126,7 @@ const handleRepay = (loan) => {
   const showNotification = (type, message) => {
     setNotification({ type, message, show: true });
     setTimeout(() => {
-      setNotification({ type: '', message: '', show: false });
+      setNotification({ type: "", message: "", show: false });
     }, 5000);
   };
 
@@ -133,12 +137,12 @@ const handleRepay = (loan) => {
       [name]: value,
     }));
     // Clear form error when user starts typing
-    if (formError) setFormError('');
+    if (formError) setFormError("");
     // Clear step errors for this field
     if (stepErrors[name]) {
-      setStepErrors(prev => ({
+      setStepErrors((prev) => ({
         ...prev,
-        [name]: undefined
+        [name]: undefined,
       }));
     }
   };
@@ -146,15 +150,17 @@ const handleRepay = (loan) => {
   // Validation for each step
   const validateStep = (step) => {
     const errors = {};
-    
+
     switch (step) {
       case 1:
-        if (!loanForm.full_name.trim()) errors.full_name = "Full name is required";
+        if (!loanForm.full_name.trim())
+          errors.full_name = "Full name is required";
         if (!loanForm.nic.trim()) errors.nic = "NIC is required";
-        if (!loanForm.date_of_birth) errors.date_of_birth = "Date of birth is required";
+        if (!loanForm.date_of_birth)
+          errors.date_of_birth = "Date of birth is required";
         if (!loanForm.address.trim()) errors.address = "Address is required";
         break;
-        
+
       case 2:
         if (!loanForm.loan_amount || Number(loanForm.loan_amount) <= 0) {
           errors.loan_amount = "Valid loan amount is required";
@@ -164,19 +170,28 @@ const handleRepay = (loan) => {
         if (!loanForm.interest_rate || Number(loanForm.interest_rate) <= 0) {
           errors.interest_rate = "Valid interest rate is required";
         }
-        if (!loanForm.credit_score || Number(loanForm.credit_score) < 300 || Number(loanForm.credit_score) > 850) {
-          errors.credit_score = "Credit score must be between 300-850";
-        }
+        // if (
+        //   !loanForm.credit_score ||
+        //   Number(loanForm.credit_score) < 300 ||
+        //   Number(loanForm.credit_score) > 850
+        // ) {
+        //   errors.credit_score = "Credit score must be between 300-850";
+        // }
         if (!loanForm.income || Number(loanForm.income) <= 0) {
           errors.income = "Valid monthly income is required";
         }
-        if (!loanForm.loan_limit.trim()) errors.loan_limit = "Loan limit is required";
+        if (!loanForm.loan_type.trim())
+          errors.loan_type = "Loan limit is required";
         break;
-        
+
       case 3:
         if (!loanForm.sector) errors.sector = "Sector is required";
-        if (!loanForm.employment_type) errors.employment_type = "Employment type is required";
-        if (!loanForm.account_balance || Number(loanForm.account_balance) < 2000) {
+        if (!loanForm.employment_type)
+          errors.employment_type = "Employment type is required";
+        if (
+          !loanForm.account_balance ||
+          Number(loanForm.account_balance) < 2000
+        ) {
           errors.account_balance = "Account balance must be at least LKR 2,000";
         }
         if (loanForm.loan_amount && loanForm.account_balance) {
@@ -186,31 +201,35 @@ const handleRepay = (loan) => {
           }
         }
         break;
-        
+
       default:
         break;
     }
-    
+
     setStepErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleNext = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 4));
+    const isValid = validateStep(currentStep);
+    console.log("Step validation result:", isValid, "Errors:", stepErrors);
+    if (isValid) {
+      setCurrentStep((prev) => Math.min(prev + 1, 4));
     }
   };
 
   const handlePrevious = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFormError('');
-    
+    setFormError("");
+
     if (!user || accounts.length === 0) {
-      setFormError("User or account information is missing. Please ensure you're logged in and have an active account.");
+      setFormError(
+        "User or account information is missing. Please ensure you're logged in and have an active account."
+      );
       return;
     }
 
@@ -224,7 +243,9 @@ const handleRepay = (loan) => {
     }
 
     if (!allValid) {
-      setFormError("Please correct the errors in previous steps before submitting.");
+      setFormError(
+        "Please correct the errors in previous steps before submitting."
+      );
       return;
     }
 
@@ -240,7 +261,7 @@ const handleRepay = (loan) => {
           interest_rate: Number(loanForm.interest_rate),
           credit_score: Number(loanForm.credit_score),
           income: Number(loanForm.income),
-          loan_limit: loanForm.loan_limit,
+          loan_type: loanForm.loan_type,
           // Additional fields
           full_name: loanForm.full_name,
           nic: loanForm.nic,
@@ -255,14 +276,19 @@ const handleRepay = (loan) => {
       const data = await res.json();
       if (res.ok) {
         setFormSubmitted(true);
-        showNotification('success', 'Loan application submitted successfully!');
+        showNotification("success", "Loan application submitted successfully!");
         console.log("✅ Loan submitted:", data);
       } else {
-        setFormError(data.error || "Loan application failed. Please check your information and try again.");
+        setFormError(
+          data.error ||
+            "Loan application failed. Please check your information and try again."
+        );
       }
     } catch (err) {
       console.error("🚨 Loan submission error:", err);
-      setFormError("Network error occurred. Please check your connection and try again.");
+      setFormError(
+        "Network error occurred. Please check your connection and try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -290,7 +316,9 @@ const handleRepay = (loan) => {
     setLoadingLoans(true);
     setErrorLoans(null);
 
-    fetch(`http://localhost:3000/api/approvals/approved/search?account_id=${account_id}`)
+    fetch(
+      `http://localhost:3000/api/approvals/approved/search?account_id=${account_id}`
+    )
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch loans");
         return res.json();
@@ -312,31 +340,37 @@ const handleRepay = (loan) => {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Full Name</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Full Name
+                </label>
                 <input
                   type="text"
                   name="full_name"
                   value={loanForm.full_name}
                   onChange={handleChange}
                   className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    stepErrors.full_name ? 'border-red-500' : 'border-gray-300'
+                    stepErrors.full_name ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Enter your full name"
                 />
                 {stepErrors.full_name && (
-                  <p className="text-red-500 text-sm mt-1">{stepErrors.full_name}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {stepErrors.full_name}
+                  </p>
                 )}
               </div>
-              
+
               <div>
-                <label className="block text-gray-700 font-medium mb-1">NIC / National ID</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  NIC / National ID
+                </label>
                 <input
                   type="text"
                   name="nic"
                   value={loanForm.nic}
                   onChange={handleChange}
                   className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    stepErrors.nic ? 'border-red-500' : 'border-gray-300'
+                    stepErrors.nic ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Enter your NIC"
                 />
@@ -345,65 +379,83 @@ const handleRepay = (loan) => {
                 )}
               </div>
             </div>
-            
+
             <div>
-              <label className="block text-gray-700 font-medium mb-1">Date of Birth</label>
+              <label className="block text-gray-700 font-medium mb-1">
+                Date of Birth
+              </label>
               <input
                 type="date"
                 name="date_of_birth"
                 value={loanForm.date_of_birth}
                 onChange={handleChange}
                 className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  stepErrors.date_of_birth ? 'border-red-500' : 'border-gray-300'
+                  stepErrors.date_of_birth
+                    ? "border-red-500"
+                    : "border-gray-300"
                 }`}
               />
               {stepErrors.date_of_birth && (
-                <p className="text-red-500 text-sm mt-1">{stepErrors.date_of_birth}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {stepErrors.date_of_birth}
+                </p>
               )}
             </div>
-            
+
             <div>
-              <label className="block text-gray-700 font-medium mb-1">Address</label>
+              <label className="block text-gray-700 font-medium mb-1">
+                Address
+              </label>
               <textarea
                 name="address"
                 value={loanForm.address}
                 onChange={handleChange}
                 rows="3"
                 className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  stepErrors.address ? 'border-red-500' : 'border-gray-300'
+                  stepErrors.address ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter your full address"
               />
               {stepErrors.address && (
-                <p className="text-red-500 text-sm mt-1">{stepErrors.address}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {stepErrors.address}
+                </p>
               )}
             </div>
           </div>
         );
-        
+
       case 2:
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Loan Amount (LKR)</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Loan Amount (LKR)
+                </label>
                 <input
                   type="number"
                   name="loan_amount"
                   value={loanForm.loan_amount}
                   onChange={handleChange}
                   className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    stepErrors.loan_amount ? 'border-red-500' : 'border-gray-300'
+                    stepErrors.loan_amount
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
                   placeholder="Max: 500,000"
                 />
                 {stepErrors.loan_amount && (
-                  <p className="text-red-500 text-sm mt-1">{stepErrors.loan_amount}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {stepErrors.loan_amount}
+                  </p>
                 )}
               </div>
-              
+
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Interest Rate (%)</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Interest Rate (%)
+                </label>
                 <input
                   type="number"
                   step="0.1"
@@ -411,200 +463,286 @@ const handleRepay = (loan) => {
                   value={loanForm.interest_rate}
                   onChange={handleChange}
                   className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    stepErrors.interest_rate ? 'border-red-500' : 'border-gray-300'
+                    stepErrors.interest_rate
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
                   placeholder="Ex: 12.5"
                 />
                 {stepErrors.interest_rate && (
-                  <p className="text-red-500 text-sm mt-1">{stepErrors.interest_rate}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {stepErrors.interest_rate}
+                  </p>
                 )}
               </div>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-gray-700 font-medium mb-1">Credit Score</label>
+
+            {/* <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Credit Score
+                </label>
                 <input
                   type="number"
                   name="credit_score"
                   value={loanForm.credit_score}
                   onChange={handleChange}
                   className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    stepErrors.credit_score ? 'border-red-500' : 'border-gray-300'
+                    stepErrors.credit_score
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
                   placeholder="300-850"
                 />
                 {stepErrors.credit_score && (
-                  <p className="text-red-500 text-sm mt-1">{stepErrors.credit_score}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {stepErrors.credit_score}
+                  </p>
                 )}
-              </div>
-              
+              </div> */}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Monthly Income (LKR)</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Monthly Income (LKR)
+                </label>
                 <input
                   type="number"
                   name="income"
                   value={loanForm.income}
                   onChange={handleChange}
                   className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    stepErrors.income ? 'border-red-500' : 'border-gray-300'
+                    stepErrors.income ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Ex: 100,000"
                 />
                 {stepErrors.income && (
-                  <p className="text-red-500 text-sm mt-1">{stepErrors.income}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {stepErrors.income}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Loan Type
+                </label>
+                <select
+                  name="loan_type"
+                  value={loanForm.loan_type}
+                  onChange={handleChange}
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    stepErrors.loan_type ? "border-red-500" : "border-gray-300"
+                  }`}
+                >
+                  <option value="">-- Select Loan Limit --</option>
+                  <option value="CF">CF</option>
+                  <option value="NCF">NCF</option>
+                </select>
+                {stepErrors.loan_type && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {stepErrors.loan_type}
+                  </p>
                 )}
               </div>
             </div>
-            
-            <div>
-              <label className="block text-gray-700 font-medium mb-1">Loan Limit</label>
-              <input
-                type="text"
-                name="loan_limit"
-                value={loanForm.loan_limit}
-                onChange={handleChange}
-                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  stepErrors.loan_limit ? 'border-red-500' : 'border-gray-300'
-                }`}
-                placeholder="Ex: CF"
-              />
-              {stepErrors.loan_limit && (
-                <p className="text-red-500 text-sm mt-1">{stepErrors.loan_limit}</p>
-              )}
-            </div>
           </div>
         );
-        
+
       case 3:
         return (
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Sector</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Sector
+                </label>
                 <select
                   name="sector"
                   value={loanForm.sector}
                   onChange={handleChange}
                   className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    stepErrors.sector ? 'border-red-500' : 'border-gray-300'
+                    stepErrors.sector ? "border-red-500" : "border-gray-300"
                   }`}
                 >
                   <option value="">Select sector</option>
-                  {sectorOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
+                  {sectorOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
                   ))}
                 </select>
                 {stepErrors.sector && (
-                  <p className="text-red-500 text-sm mt-1">{stepErrors.sector}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {stepErrors.sector}
+                  </p>
                 )}
               </div>
-              
+
               <div>
-                <label className="block text-gray-700 font-medium mb-1">Employment Type</label>
+                <label className="block text-gray-700 font-medium mb-1">
+                  Employment Type
+                </label>
                 <select
                   name="employment_type"
                   value={loanForm.employment_type}
                   onChange={handleChange}
                   className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                    stepErrors.employment_type ? 'border-red-500' : 'border-gray-300'
+                    stepErrors.employment_type
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
                 >
                   <option value="">Select employment type</option>
-                  {employmentOptions.map(option => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
+                  {employmentOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
                   ))}
                 </select>
                 {stepErrors.employment_type && (
-                  <p className="text-red-500 text-sm mt-1">{stepErrors.employment_type}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {stepErrors.employment_type}
+                  </p>
                 )}
               </div>
             </div>
-            
+
             <div>
-              <label className="block text-gray-700 font-medium mb-1">Account Balance (LKR)</label>
+              <label className="block text-gray-700 font-medium mb-1">
+                Account Balance (LKR)
+              </label>
               <input
                 type="number"
                 name="account_balance"
                 value={loanForm.account_balance}
                 onChange={handleChange}
                 className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  stepErrors.account_balance ? 'border-red-500' : 'border-gray-300'
+                  stepErrors.account_balance
+                    ? "border-red-500"
+                    : "border-gray-300"
                 }`}
                 placeholder="Current account balance"
               />
               {stepErrors.account_balance && (
-                <p className="text-red-500 text-sm mt-1">{stepErrors.account_balance}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {stepErrors.account_balance}
+                </p>
               )}
             </div>
-            
+
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-start">
                 <AlertCircle className="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
                 <div className="text-blue-800">
                   <p className="font-medium">Account Balance Requirements:</p>
                   <p className="text-sm mt-1">
-                    Account balance must be at least <strong>1/12 of requested loan amount</strong> and <strong>≥ LKR 2,000</strong>
+                    Account balance must be at least{" "}
+                    <strong>1/12 of requested loan amount</strong> and{" "}
+                    <strong>≥ LKR 2,000</strong>
                   </p>
                 </div>
               </div>
             </div>
           </div>
         );
-        
+
       case 4:
         return (
           <div className="space-y-6">
             <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="text-lg font-semibold mb-4">Review Your Application</h3>
-              
+              <h3 className="text-lg font-semibold mb-4">
+                Review Your Application
+              </h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Personal Details</h4>
+                  <h4 className="font-medium text-gray-700 mb-2">
+                    Personal Details
+                  </h4>
                   <div className="space-y-1 text-sm">
-                    <p><span className="font-medium">Name:</span> {loanForm.full_name}</p>
-                    <p><span className="font-medium">NIC:</span> {loanForm.nic}</p>
-                    <p><span className="font-medium">Date of Birth:</span> {loanForm.date_of_birth}</p>
-                    <p><span className="font-medium">Address:</span> {loanForm.address}</p>
+                    <p>
+                      <span className="font-medium">Name:</span>{" "}
+                      {loanForm.full_name}
+                    </p>
+                    <p>
+                      <span className="font-medium">NIC:</span> {loanForm.nic}
+                    </p>
+                    <p>
+                      <span className="font-medium">Date of Birth:</span>{" "}
+                      {loanForm.date_of_birth}
+                    </p>
+                    <p>
+                      <span className="font-medium">Address:</span>{" "}
+                      {loanForm.address}
+                    </p>
                   </div>
                 </div>
-                
+
                 <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Loan Details</h4>
+                  <h4 className="font-medium text-gray-700 mb-2">
+                    Loan Details
+                  </h4>
                   <div className="space-y-1 text-sm">
-                    <p><span className="font-medium">Amount:</span> LKR {Number(loanForm.loan_amount).toLocaleString()}</p>
-                    <p><span className="font-medium">Interest Rate:</span> {loanForm.interest_rate}%</p>
-                    <p><span className="font-medium">Credit Score:</span> {loanForm.credit_score}</p>
-                    <p><span className="font-medium">Monthly Income:</span> LKR {Number(loanForm.income).toLocaleString()}</p>
-                    <p><span className="font-medium">Loan Limit:</span> {loanForm.loan_limit}</p>
+                    <p>
+                      <span className="font-medium">Amount:</span> LKR{" "}
+                      {Number(loanForm.loan_amount).toLocaleString()}
+                    </p>
+                    <p>
+                      <span className="font-medium">Interest Rate:</span>{" "}
+                      {loanForm.interest_rate}%
+                    </p>
+                    <p>
+                      <span className="font-medium">Credit Score:</span>{" "}
+                      {loanForm.credit_score}
+                    </p>
+                    <p>
+                      <span className="font-medium">Monthly Income:</span> LKR{" "}
+                      {Number(loanForm.income).toLocaleString()}
+                    </p>
+                    <p>
+                      <span className="font-medium">Loan Limit:</span>{" "}
+                      {loanForm.loan_type}
+                    </p>
                   </div>
                 </div>
-                
+
                 <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Financial Details</h4>
+                  <h4 className="font-medium text-gray-700 mb-2">
+                    Financial Details
+                  </h4>
                   <div className="space-y-1 text-sm">
-                    <p><span className="font-medium">Sector:</span> {loanForm.sector}</p>
-                    <p><span className="font-medium">Employment:</span> {loanForm.employment_type}</p>
-                    <p><span className="font-medium">Account Balance:</span> LKR {Number(loanForm.account_balance).toLocaleString()}</p>
+                    <p>
+                      <span className="font-medium">Sector:</span>{" "}
+                      {loanForm.sector}
+                    </p>
+                    <p>
+                      <span className="font-medium">Employment:</span>{" "}
+                      {loanForm.employment_type}
+                    </p>
+                    <p>
+                      <span className="font-medium">Account Balance:</span> LKR{" "}
+                      {Number(loanForm.account_balance).toLocaleString()}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-start">
                 <AlertCircle className="w-5 h-5 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
                 <div className="text-yellow-800">
                   <p className="font-medium">Before submitting:</p>
                   <p className="text-sm mt-1">
-                    Please review all information carefully. Once submitted, your application will be processed by our team.
+                    Please review all information carefully. Once submitted,
+                    your application will be processed by our team.
                   </p>
                 </div>
               </div>
             </div>
           </div>
         );
-        
+
       default:
         return null;
     }
@@ -615,10 +753,14 @@ const handleRepay = (loan) => {
       <div className="max-w-7xl mx-auto">
         {/* Notification Toast */}
         {notification.show && (
-          <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg flex items-center space-x-2 ${
-            notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-          }`}>
-            {notification.type === 'success' ? (
+          <div
+            className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg flex items-center space-x-2 ${
+              notification.type === "success"
+                ? "bg-green-500 text-white"
+                : "bg-red-500 text-white"
+            }`}
+          >
+            {notification.type === "success" ? (
               <CheckCircle size={20} />
             ) : (
               <AlertCircle size={20} />
@@ -634,31 +776,9 @@ const handleRepay = (loan) => {
         )}
 
         {/* Important Notice */}
-        <div className="bg-amber-50 border-l-4 border-amber-400 p-6 mb-8 rounded-r-lg">
-          <div className="flex items-start">
-            <AlertCircle className="w-6 h-6 text-amber-600 mr-3 mt-1" />
-            <div>
-              <h3 className="text-lg font-semibold text-amber-800 mb-3">Important Notice</h3>
-              <div className="text-amber-700 space-y-2">
-                <p>• This is a <strong>Personal Loan</strong> application.</p>
-                <p>• You can apply for a <strong>maximum loan amount of LKR 500,000</strong>.</p>
-                <p>• Calculate your eligible loan amount using <strong>Loan Calculator</strong> provided in this site.</p>
-                <p>• In order to receive the loan amount you are applying for, your account balance <strong>must be at least 1/12 of the requested loan amount</strong>.</p>
-                <p>• Additionally, you are required to <strong>maintain a minimum balance of LKR 2,000</strong> in your account at all times.</p>
-              </div>
-              
-              <h4 className="text-md font-semibold text-amber-800 mt-4 mb-2">Interest Rates</h4>
-              <div className="text-amber-700 space-y-1">
-                <p>Personal loans are available to professionals and employees in:</p>
-                <p>• <strong>Government / Semi-Government institutions</strong> – at an <strong>interest rate of 17.00% per annum</strong>.</p>
-                <p>• <strong>Private sector employees</strong> – interest rates vary based on the repayment period:</p>
-                <p className="ml-4">• <strong>17.50%</strong> or <strong>18.50% per annum</strong>, depending on your loan term.</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ImportantNotice />
 
-        <LoanCalculator/>
+        <LoanCalculator />
 
         {/* Multi-Step Loan Application Form */}
         <div className="bg-white rounded-xl shadow-sm mb-8 mt-8 overflow-hidden">
@@ -697,7 +817,7 @@ const handleRepay = (loan) => {
                     interest_rate: "",
                     credit_score: "",
                     income: "",
-                    loan_limit: "",
+                    loan_type: "",
                     sector: "",
                     employment_type: "",
                     account_balance: accounts?.[0]?.balance || "",
@@ -718,16 +838,18 @@ const handleRepay = (loan) => {
                     const Icon = step.icon;
                     const isActive = currentStep === step.number;
                     const isCompleted = currentStep > step.number;
-                    
+
                     return (
                       <div key={step.number} className="flex items-center">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all ${
-                          isActive 
-                            ? 'bg-blue-500 border-blue-500 text-white' 
-                            : isCompleted 
-                              ? 'bg-green-500 border-green-500 text-white'
-                              : 'bg-gray-100 border-gray-300 text-gray-400'
-                        }`}>
+                        <div
+                          className={`flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all ${
+                            isActive
+                              ? "bg-blue-500 border-blue-500 text-white"
+                              : isCompleted
+                              ? "bg-green-500 border-green-500 text-white"
+                              : "bg-gray-100 border-gray-300 text-gray-400"
+                          }`}
+                        >
                           {isCompleted ? (
                             <CheckCircle size={20} />
                           ) : (
@@ -735,33 +857,51 @@ const handleRepay = (loan) => {
                           )}
                         </div>
                         <div className="ml-3">
-                          <div className={`text-sm font-medium ${
-                            isActive ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
-                          }`}>
+                          <div
+                            className={`text-sm font-medium ${
+                              isActive
+                                ? "text-blue-600"
+                                : isCompleted
+                                ? "text-green-600"
+                                : "text-gray-400"
+                            }`}
+                          >
                             Step {step.number}
                           </div>
-                          <div className={`text-xs ${
-                            isActive ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
-                          }`}>
+                          <div
+                            className={`text-xs ${
+                              isActive
+                                ? "text-blue-600"
+                                : isCompleted
+                                ? "text-green-600"
+                                : "text-gray-400"
+                            }`}
+                          >
                             {step.title}
                           </div>
                         </div>
-                        
+
                         {index < steps.length - 1 && (
-                          <div className={`w-16 h-0.5 ml-4 ${
-                            isCompleted ? 'bg-green-500' : 'bg-gray-200'
-                          }`} />
+                          <div
+                            className={`w-16 h-0.5 ml-4 ${
+                              isCompleted ? "bg-green-500" : "bg-gray-200"
+                            }`}
+                          />
                         )}
                       </div>
                     );
                   })}
                 </div>
-                
+
                 {/* Progress Bar */}
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+                    style={{
+                      width: `${
+                        ((currentStep - 1) / (steps.length - 1)) * 100
+                      }%`,
+                    }}
                   />
                 </div>
               </div>
@@ -786,16 +926,17 @@ const handleRepay = (loan) => {
                     {steps[currentStep - 1].title}
                   </h3>
                   <p className="text-gray-600 text-sm mt-1">
-                    {currentStep === 1 && "Please provide your personal information"}
-                    {currentStep === 2 && "Enter your loan requirements and financial details"}
-                    {currentStep === 3 && "Complete your employment and financial information"}
+                    {currentStep === 1 &&
+                      "Please provide your personal information"}
+                    {currentStep === 2 &&
+                      "Enter your loan requirements and financial details"}
+                    {currentStep === 3 &&
+                      "Complete your employment and financial information"}
                     {currentStep === 4 && "Review and confirm your application"}
                   </p>
                 </div>
-                
-                <div className="min-h-[400px]">
-                  {renderStepContent()}
-                </div>
+
+                <div className="min-h-[400px]">{renderStepContent()}</div>
               </div>
 
               {/* Navigation Buttons */}
@@ -805,8 +946,8 @@ const handleRepay = (loan) => {
                   disabled={currentStep === 1}
                   className={`flex items-center px-6 py-3 rounded-lg font-medium transition-colors ${
                     currentStep === 1
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                   }`}
                 >
                   <ArrowLeft size={20} className="mr-2" />
@@ -814,7 +955,9 @@ const handleRepay = (loan) => {
                 </button>
 
                 <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <span>Step {currentStep} of {steps.length}</span>
+                  <span>
+                    Step {currentStep} of {steps.length}
+                  </span>
                 </div>
 
                 {currentStep < 4 ? (
@@ -830,16 +973,32 @@ const handleRepay = (loan) => {
                     onClick={handleSubmit}
                     disabled={isSubmitting}
                     className={`flex items-center px-8 py-3 rounded-lg font-medium transition-colors ${
-                      isSubmitting 
-                        ? "bg-blue-300 text-white cursor-not-allowed" 
+                      isSubmitting
+                        ? "bg-blue-300 text-white cursor-not-allowed"
                         : "bg-green-600 text-white hover:bg-green-700"
                     }`}
                   >
                     {isSubmitting ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Submitting...
                       </>
@@ -857,10 +1016,7 @@ const handleRepay = (loan) => {
         </div>
 
         {/* Active Loans Table */}
-        <ActiveLoanTable
-          activeLoans={activeLoans}
-          onRepay={handleRepay} 
-        />
+        <ActiveLoanTable activeLoans={activeLoans} onRepay={handleRepay} />
 
         {/* Repay Modal */}
         {showRepayModal && (
@@ -868,18 +1024,21 @@ const handleRepay = (loan) => {
             <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md">
               <h2 className="text-lg font-semibold mb-2">Repay Loan</h2>
               <p className="text-gray-600 mb-4">
-                Enter amount to repay for <strong>Loan ID: {repayLoan?.loan_id}</strong>
+                Enter amount to repay for{" "}
+                <strong>Loan ID: {repayLoan?.loan_id}</strong>
               </p>
-              
+
               {/* Repay Status Display */}
               {repayStatus.message && (
-                <div className={`rounded-lg p-3 mb-4 ${
-                  repayStatus.type === 'success' 
-                    ? 'bg-green-50 text-green-800' 
-                    : 'bg-red-50 text-red-800'
-                }`}>
+                <div
+                  className={`rounded-lg p-3 mb-4 ${
+                    repayStatus.type === "success"
+                      ? "bg-green-50 text-green-800"
+                      : "bg-red-50 text-red-800"
+                  }`}
+                >
                   <div className="flex items-center">
-                    {repayStatus.type === 'success' ? (
+                    {repayStatus.type === "success" ? (
                       <CheckCircle className="w-4 h-4 mr-2" />
                     ) : (
                       <AlertCircle className="w-4 h-4 mr-2" />
@@ -896,14 +1055,14 @@ const handleRepay = (loan) => {
                 value={repayAmount}
                 onChange={(e) => {
                   setRepayAmount(e.target.value);
-                  setRepayStatus({ type: '', message: '' });
+                  setRepayStatus({ type: "", message: "" });
                 }}
               />
               <div className="flex justify-end space-x-2">
                 <button
                   onClick={() => {
                     setShowRepayModal(false);
-                    setRepayStatus({ type: '', message: '' });
+                    setRepayStatus({ type: "", message: "" });
                   }}
                   className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
                 >
@@ -911,39 +1070,63 @@ const handleRepay = (loan) => {
                 </button>
                 <button
                   onClick={async () => {
-                    if (!repayAmount || isNaN(repayAmount) || repayAmount <= 0) {
-                      setRepayStatus({ type: 'error', message: 'Please enter a valid amount.' });
+                    if (
+                      !repayAmount ||
+                      isNaN(repayAmount) ||
+                      repayAmount <= 0
+                    ) {
+                      setRepayStatus({
+                        type: "error",
+                        message: "Please enter a valid amount.",
+                      });
                       return;
                     }
-                    
-                    setRepayStatus({ type: '', message: '' });
+
+                    setRepayStatus({ type: "", message: "" });
                     try {
-                      const res = await fetch("http://localhost:3000/api/repayments", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          user_id,
-                          loan_id: repayLoan.loan_id,
-                          account_id: repayLoan.account_id,
-                          amount_paid: parseFloat(repayAmount),
-                        }),
-                      });
+                      const res = await fetch(
+                        "http://localhost:3000/api/repayments",
+                        {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            user_id,
+                            loan_id: repayLoan.loan_id,
+                            account_id: repayLoan.account_id,
+                            amount_paid: parseFloat(repayAmount),
+                          }),
+                        }
+                      );
                       const data = await res.json();
                       if (res.ok) {
-                        setRepayStatus({ type: 'success', message: 'Repayment processed successfully!' });
-                        showNotification('success', `Repayment of ${repayAmount} processed successfully`);
+                        setRepayStatus({
+                          type: "success",
+                          message: "Repayment processed successfully!",
+                        });
+                        showNotification(
+                          "success",
+                          `Repayment of ${repayAmount} processed successfully`
+                        );
                         setTimeout(() => {
                           setShowRepayModal(false);
-                          setRepayStatus({ type: '', message: '' });
+                          setRepayStatus({ type: "", message: "" });
                           // Refresh loans data
                           window.location.reload();
                         }, 2000);
                       } else {
-                        setRepayStatus({ type: 'error', message: data.error || 'Repayment failed. Please try again.' });
+                        setRepayStatus({
+                          type: "error",
+                          message:
+                            data.error || "Repayment failed. Please try again.",
+                        });
                       }
                     } catch (err) {
                       console.error(err);
-                      setRepayStatus({ type: 'error', message: 'Network error occurred. Please check your connection and try again.' });
+                      setRepayStatus({
+                        type: "error",
+                        message:
+                          "Network error occurred. Please check your connection and try again.",
+                      });
                     }
                   }}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
