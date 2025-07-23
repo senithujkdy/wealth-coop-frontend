@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode'; // ✅ Correct import
+import { jwtDecode } from 'jwt-decode';
 
 const AuthContext = createContext();
 
@@ -11,65 +11,83 @@ export const AuthProvider = ({ children }) => {
 
   const [token, setToken] = useState(() => localStorage.getItem('token') || null);
   const [logoutTimer, setLogoutTimer] = useState(null);
+  const [isWindowFocused, setIsWindowFocused] = useState(document.hasFocus());
 
-// Sync logout/login across tabs
+  // 🔄 Track tab focus status
   useEffect(() => {
-    const syncAuth = (event) => {
-      if (event.key === 'user') {
-        // When 'user' key changes, update state
-        if (event.newValue) {
-          setUser(JSON.parse(event.newValue));
-        } else {
-          // user was removed = logout happened in another tab
-          setUser(null);
-          setToken(null);
-          if (logoutTimer) clearTimeout(logoutTimer);
-        }
-      }
-      if (event.key === 'token') {
-        if (event.newValue) {
-          setToken(event.newValue);
-        } else {
-          setToken(null);
-        }
-      }
-    };
+    const handleFocus = () => setIsWindowFocused(true);
+    const handleBlur = () => setIsWindowFocused(false);
 
-    window.addEventListener('storage', syncAuth);
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
 
     return () => {
-      window.removeEventListener('storage', syncAuth);
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
     };
-  }, [logoutTimer]);
+  }, []);
 
+  // ⏰ Token expiry auto-logout ONLY when window NOT focused
   useEffect(() => {
     if (token && user?.role === 'customer') {
       try {
-        const decoded = jwtDecode(token); // ✅ Correct usage
-        const now = Date.now() / 1000;
+        const decoded = jwtDecode(token);
+        const now = Date.now() / 10000000;  // 1000
         const timeLeft = decoded.exp - now;
 
         if (timeLeft <= 0) {
           logout();
-        } else {
+        } else if (!isWindowFocused) {
+          // Only auto logout when tab NOT in focus
           const timer = setTimeout(() => {
-            console.log('⏳ Token expired. Logging out automatically...');
+            console.log('⏳ Token expired while tab not focused. Logging out...');
             logout();
-          }, timeLeft * 1000);
-
+          }, timeLeft * 500000);   // 5000 
           setLogoutTimer(timer);
-          console.log(`⏰ Auto-logout scheduled in ${Math.round(timeLeft)} seconds`);
+          console.log(`⏰ Token expiry logout scheduled in ${Math.round(timeLeft)}s`);
+        } else {
+          console.log('🟢 Token valid, and tab is focused — skipping auto logout');
         }
       } catch (err) {
-        console.error('Invalid token:', err);
-        logout(); // fallback
+        console.error('❌ Invalid token:', err);
+        logout();
       }
     }
 
     return () => {
       if (logoutTimer) clearTimeout(logoutTimer);
     };
-  }, [token]);
+  }, [token, user, isWindowFocused]);
+
+  // 👋 Logout when tab is unfocused for too long
+  useEffect(() => {
+    let blurLogoutTimer;
+
+    const handleBlur = () => {
+      if (user?.role === 'customer') {
+        console.log('👋 Tab lost focus. Scheduling logout...');
+        blurLogoutTimer = setTimeout(() => {
+          console.log('🔒 Logging out due to tab switch/inactivity');
+          logout();
+        }, 10000000); // logout after 10 seconds unfocused - 10000
+      }
+    };
+
+    const handleFocus = () => {
+      if (blurLogoutTimer) {
+        console.log('✅ Tab focused again. Canceling blur logout timer');
+        clearTimeout(blurLogoutTimer);
+      }
+    };
+
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user]);
 
   const login = (userData) => {
     localStorage.setItem('user', JSON.stringify(userData));

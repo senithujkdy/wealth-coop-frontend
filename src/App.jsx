@@ -18,6 +18,9 @@ import LoanAmountForecast from "./pages/Predictions/LoanForcast";
 import LoanRepaymentPrediction from "./pages/Predictions/LoanRepayment";
 import UDashboard from './pages/UserDashboard/UDashboard'; 
 import Transaction from './pages/UserDashboard/Transaction'; 
+import TransactionPortal from './pages/UserDashboard/TransactionPortal';
+import BillPayment from './pages/UserDashboard/BillPayment';
+import RecurringTransfer from './pages/UserDashboard/RecurringTransfer';
 import NotFound from './pages/NotFound/NotFound';
 import UserManagement from './components/layout/UserManagement/UserManagement';
 
@@ -37,6 +40,9 @@ function App() {
             <Route path="loans" element={<Loan />} />
             <Route path="settings" element={<Settings />} />
             <Route path="transaction" element={<Transaction />} />
+            <Route path="/transaction/transactionportal" element={<TransactionPortal/>} />
+            <Route path="/transaction/bill-payment" element={<BillPayment />} />
+            <Route path="/transaction/recurring" element={<RecurringTransfer />} />
           </Route>
         </Route>
 

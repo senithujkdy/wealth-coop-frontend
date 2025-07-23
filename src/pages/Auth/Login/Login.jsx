@@ -238,9 +238,9 @@ const Login = () => {
             </button>
 
             {/* Register Link */}
-            <p className="text-center text-gray-600">
+            {/* <p className="text-center text-gray-600">
               Don't have an account? <a href="/register" className="text-blue-600 hover:underline">Register</a>
-            </p>
+            </p> */}
           </form>
         </div>
       </div>
